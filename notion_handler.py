@@ -8,35 +8,48 @@ headers = {
     "Notion-Version": "2022-06-28"
 }
 
-def get_today_poll_events():
-    today = datetime.datetime.now().date().isoformat()  # 'YYYY-MM-DD'
+# 📌 今日の日付（YYYY-MM-DD）を取得
+def get_today_date():
+    return datetime.datetime.now().strftime("%Y-%m-%d")
+
+# ✅ 募集開始日または終了日が今日のイベントを取得（12時用）
+def get_events_for_today_post():
+    today = get_today_date()
     url = f"https://api.notion.com/v1/databases/{config.NOTION_EVENT_DATABASE_ID}/query"
-    
     payload = {
         "filter": {
             "or": [
                 {
                     "property": "募集開始日",
-                    "date": {
-                        "equals": today
-                    }
+                    "date": {"equals": today}
                 },
                 {
                     "property": "募集終了日",
-                    "date": {
-                        "equals": today
-                    }
+                    "date": {"equals": today}
                 }
             ]
         }
     }
-
     response = requests.post(url, headers=headers, json=payload)
-
     if response.status_code != 200:
-        print("❌ Failed to fetch events:", response.text)
+        print("❌ Failed to fetch today's postable events:", response.text)
         return []
-    
+    return response.json().get("results", [])
+
+# ✅ 募集終了日が今日のイベントを取得（24時用）
+def get_events_for_today_payment():
+    today = get_today_date()
+    url = f"https://api.notion.com/v1/databases/{config.NOTION_EVENT_DATABASE_ID}/query"
+    payload = {
+        "filter": {
+            "property": "募集終了日",
+            "date": {"equals": today}
+        }
+    }
+    response = requests.post(url, headers=headers, json=payload)
+    if response.status_code != 200:
+        print("❌ Failed to fetch today's payment events:", response.text)
+        return []
     return response.json().get("results", [])
 
 def add_reaction_to_notion(data):
