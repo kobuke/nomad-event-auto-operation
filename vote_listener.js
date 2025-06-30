@@ -26,9 +26,12 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
     const [eventTitleLine] = reaction.message.content.split('\n');
     const [title, event_id] = eventTitleLine.replace('📢 ', '').split(' | ');
 
+    const member = await reaction.message.guild.members.fetch(user.id);
+    const displayName = member.displayName || user.username;
+
     const payload = {
       user_id: user.id,
-      username: user.username,
+      username: displayName,
       emoji: reaction.emoji.name,
       message_id: reaction.message.id,
       event_id: event_id?.trim() || null,
