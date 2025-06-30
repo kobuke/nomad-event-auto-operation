@@ -187,8 +187,8 @@ def get_participants_by_event(event_id):
 
     return participants
 
-# DMでStripeのリンクを送信後に決済状況を"未払い"に設定する
-def update_payment_status(discord_user_id, event_id, status="未"):
+# DMでStripeのリンクを送信後に決済状況を更新する（nullだったら"未払い"に設定する）
+def update_payment_status(discord_user_id, event_id, status="未払い"):
     url = f"https://api.notion.com/v1/databases/{config.NOTION_ANSWER_DATABASE_ID}/query"
     payload = {
         "filter": {
