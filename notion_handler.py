@@ -1,5 +1,6 @@
 import requests
 import config
+import datetime
 
 headers = {
     "Authorization": f"Bearer {config.NOTION_API_TOKEN}",
@@ -8,32 +9,55 @@ headers = {
 }
 
 def get_today_poll_events():
+    today = datetime.datetime.now().date().isoformat()  # 'YYYY-MM-DD'
     url = f"https://api.notion.com/v1/databases/{config.NOTION_EVENT_DATABASE_ID}/query"
-    response = requests.post(url, headers=headers)
+    
+    payload = {
+        "filter": {
+            "or": [
+                {
+                    "property": "募集開始日",
+                    "date": {
+                        "equals": today
+                    }
+                },
+                {
+                    "property": "募集終了日",
+                    "date": {
+                        "equals": today
+                    }
+                }
+            ]
+        }
+    }
+
+    response = requests.post(url, headers=headers, json=payload)
+
     if response.status_code != 200:
-        print("❌ Failed to fetch events")
+        print("❌ Failed to fetch events:", response.text)
         return []
+    
     return response.json().get("results", [])
 
 def add_reaction_to_notion(data):
-    # Discord絵文字 → Notionの選択肢に変換
     emoji_to_answer = {
         "✅": "参加する",
         "❓": "興味あり",
         "❌": "参加しない"
     }
 
-    # イベントを取得（タイトル一致）
     events = get_today_poll_events()
     event_id = None
+
     for ev in events:
-        title = ev["properties"]["イベント名"]["title"][0]["plain_text"]
-        if title == data["event_title"]:
-            event_id = ev["id"]
+        # NotionのイベントページID（ハイフン無しで送られてくる可能性を考慮）
+        notion_id = ev["id"].replace("-", "")
+        if notion_id == data["event_id"].replace("-", ""):
+            event_id = ev["id"]  # 正しい形式で保持（Notion APIに渡す）
             break
 
     if event_id is None:
-        print("❌ Event not found in Notion:", data["event_title"])
+        print("❌ Event ID not found in Notion:", data["event_id"])
         return False
 
     payload = {
