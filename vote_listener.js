@@ -1,7 +1,7 @@
 import { Client, GatewayIntentBits, Partials, Events } from 'discord.js';
 import fetch from 'node-fetch';
-import fs from 'fs';
-import config from './config_for_node.json' assert { type: 'json' };
+import dotenv from 'dotenv';
+dotenv.config();
 
 const client = new Client({
   intents: [
@@ -39,7 +39,7 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
 
     console.log("✅ Reaction payload:", payload);
 
-    await fetch(config.WEBHOOK_URL, {
+    await fetch(process.env.WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -49,4 +49,4 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
   }
 });
 
-client.login(config.NODE_DISCORD_BOT_TOKEN);
+client.login(process.env.DISCORD_BOT_TOKEN);
