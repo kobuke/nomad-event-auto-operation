@@ -3,13 +3,56 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import stripe from 'stripe';
 import dotenv from 'dotenv';
-import { updatePaymentStatus } from './notionHandler.js';
+import { updatePaymentStatus, getEventDetails } from './notionHandler.js';
 import { Client as NotionClient } from '@notionhq/client';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 8080;
+
+app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
+  const { eventId, userId } = req.body;
+
+  if (!eventId || !userId) {
+    return res.status(400).json({ error: 'Missing eventId or userId' });
+  }
+
+  try {
+    const eventDetails = await getEventDetails(eventId);
+    if (!eventDetails) {
+      return res.status(404).json({ error: 'Event not found or details missing' });
+    }
+
+    const session = await stripeClient.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'jpy',
+            product_data: {
+              name: eventDetails.title,
+            },
+            unit_amount: eventDetails.fee, // 参加費（円）をStripeの最小単位（円）で設定
+          },
+          quantity: 1,
+        },
+      ],
+      mode: 'payment',
+      success_url: `${process.env.RAILWAY_PUBLIC_DOMAIN}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.RAILWAY_PUBLIC_DOMAIN}/cancel`,
+      metadata: {
+        discord_id: userId,
+        event_id: eventId,
+      },
+    });
+
+    res.json({ url: session.url });
+  } catch (error) {
+    console.error('Error creating checkout session:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Stripe Webhook
 const stripeClient = new stripe(process.env.STRIPE_SECRET_KEY);

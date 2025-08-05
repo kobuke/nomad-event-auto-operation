@@ -35,6 +35,18 @@ export const getEventsForTodayPost = async () => {
   }
 };
 
+export const getEventDetails = async (eventId) => {
+  try {
+    const response = await notion.pages.retrieve({ page_id: eventId });
+    const title = response.properties['イベント名']?.title[0]?.plain_text || 'Unknown Event';
+    const fee = response.properties['参加費（円）']?.number || 0; // Assuming '参加費（円）' is a number property
+    return { title, fee };
+  } catch (error) {
+    console.error(`❌ Failed to fetch event details for ${eventId}:`, error);
+    return null;
+  }
+};
+
 export const getEventsForTodayPayment = async () => {
   const today = getTodayDate();
   try {

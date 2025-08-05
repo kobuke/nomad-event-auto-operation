@@ -39,6 +39,27 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
 
     console.log("✅ Reaction payload:", payload);
 
+    if (reaction.emoji.name === '✅') {
+      const createSessionResponse = await fetch(`${process.env.RAILWAY_PUBLIC_DOMAIN}/create-checkout-session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventId: event_id?.trim(), userId: user.id }),
+      });
+      const sessionData = await createSessionResponse.json();
+
+      if (sessionData.url) {
+        const dmChannel = await member.createDM();
+        await dmChannel.send(
+          `${displayName}さん、イベント「${title}」へのご参加ありがとうございます！\n` +
+          `決済はこちらからお願いします：\n${sessionData.url}\n\n` +
+          `ご不明な点があれば、お気軽にお問い合わせください。`
+        );
+        console.log(`✅ Sent Stripe checkout link to ${displayName}`);
+      } else {
+        console.error('❌ Failed to get Stripe checkout URL:', sessionData.error);
+      }
+    }
+
     await fetch(process.env.WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
