@@ -41,7 +41,7 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
 
     if (reaction.emoji.name === '✅') {
       const railwayPublicDomain = process.env.RAILWAY_PUBLIC_DOMAIN;
-      const stripeCheckoutUrl = `https://${railwayPublicDomain}/create-checkout-session`;
+      const stripeCheckoutUrl = `http://${railwayPublicDomain}/create-checkout-session`;
       console.log(`[DEBUG] RAILWAY_PUBLIC_DOMAIN: ${railwayPublicDomain}`);
       console.log(`[DEBUG] Attempting to fetch Stripe checkout session from: ${stripeCheckoutUrl}`);
       try {
@@ -63,7 +63,10 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
           const dmChannel = await member.createDM();
           await dmChannel.send(
             `${displayName}さん、イベント「${title}」へのご参加ありがとうございます！\n` +
-            `決済はこちらからお願いします：\n${sessionData.url}\n\n` +
+            `決済はこちらからお願いします：
+[決済URL](${sessionData.url})
+
+` +
             `ご不明な点があれば、お気軽にお問い合わせください。`
           );
           console.log(`✅ Sent Stripe checkout link to ${displayName}`);

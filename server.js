@@ -39,8 +39,8 @@ app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
         },
       ],
       mode: 'payment',
-      success_url: `${process.env.RAILWAY_PUBLIC_DOMAIN}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.RAILWAY_PUBLIC_DOMAIN}/cancel`,
+      success_url: `http://${process.env.RAILWAY_PUBLIC_DOMAIN}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `http://${process.env.RAILWAY_PUBLIC_DOMAIN}/cancel`,
       metadata: {
         discord_id: userId,
         event_id: eventId,
