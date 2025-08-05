@@ -91,14 +91,14 @@ app.post('/stripe-webhook', bodyParser.raw({ type: 'application/json' }), async 
 const notion = new NotionClient({ auth: process.env.NOTION_API_TOKEN });
 const NOTION_DB_ID = process.env.NOTION_ANSWER_DATABASE_ID;
 
-const findExistingAnswer = async (userId, eventId) => {
+const findExistingAnswer = async (user_id, event_id) => {
   try {
     const response = await notion.databases.query({
       database_id: NOTION_DB_ID,
       filter: {
         and: [
-          { property: 'Discord User ID', rich_text: { equals: userId } },
-          { property: 'イベント', relation: { contains: eventId } },
+          { property: 'Discord User ID', rich_text: { equals: user_id } },
+          { property: 'イベント', relation: { contains: event_id } },
         ],
       },
     });
@@ -110,27 +110,27 @@ const findExistingAnswer = async (userId, eventId) => {
 };
 
 app.post('/vote-webhook', bodyParser.json(), async (req, res) => {
-  const { userId, emoji, eventId, username } = req.body;
+  const { user_id, emoji, event_id, username } = req.body;
   console.log('✅ Reaction received:', req.body);
 
   const emojiToAnswer = { '✅': '参加する', '❓': '興味あり', '❌': '参加しない' };
   const answer = emojiToAnswer[emoji] || '未定義';
 
   const properties = {
-    'Discord User ID': { rich_text: [{ text: { content: userId } }] },
+    'Discord User ID': { rich_text: [{ text: { content: user_id } }] },
     'User Name': { title: [{ text: { content: username } }] },
-    'イベント': { relation: [{ id: eventId }] },
+    'イベント': { relation: [{ id: event_id }] },
     '回答': { select: { name: answer } },
   };
 
   try {
-    const existingId = await findExistingAnswer(userId, eventId);
+    const existingId = await findExistingAnswer(user_id, event_id);
     if (existingId) {
       await notion.pages.update({ page_id: existingId, properties });
-      console.log(`✅ Updated answer for ${userId} in event ${eventId}`);
+      console.log(`✅ Updated answer for ${user_id} in event ${event_id}`);
     } else {
       await notion.pages.create({ parent: { database_id: NOTION_DB_ID }, properties });
-      console.log(`✅ Created answer for ${userId} in event ${eventId}`);
+      console.log(`✅ Created answer for ${user_id} in event ${event_id}`);
     }
     res.sendStatus(200);
   } catch (error) {

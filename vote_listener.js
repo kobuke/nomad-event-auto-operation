@@ -40,31 +40,60 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
     console.log("✅ Reaction payload:", payload);
 
     if (reaction.emoji.name === '✅') {
-      const createSessionResponse = await fetch(`${process.env.RAILWAY_PUBLIC_DOMAIN}/create-checkout-session`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ eventId: event_id?.trim(), userId: user.id }),
-      });
-      const sessionData = await createSessionResponse.json();
+      const railwayPublicDomain = process.env.RAILWAY_PUBLIC_DOMAIN;
+      const stripeCheckoutUrl = `${railwayPublicDomain}/create-checkout-session`;
+      console.log(`[DEBUG] RAILWAY_PUBLIC_DOMAIN: ${railwayPublicDomain}`);
+      console.log(`[DEBUG] Attempting to fetch Stripe checkout session from: ${stripeCheckoutUrl}`);
+      try {
+        const createSessionResponse = await fetch(stripeCheckoutUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ eventId: event_id?.trim(), userId: user.id }),
+        });
+        console.log(`[DEBUG] Stripe checkout session response status: ${createSessionResponse.status}`);
+        if (!createSessionResponse.ok) {
+          console.error(`[ERROR] Stripe checkout session request failed with status: ${createSessionResponse.status}`);
+          const errorText = await createSessionResponse.text();
+          console.error(`[ERROR] Stripe checkout session error response: ${errorText}`);
+        }
+        const sessionData = await createSessionResponse.json();
+        console.log('[DEBUG] Stripe session data:', sessionData);
 
-      if (sessionData.url) {
-        const dmChannel = await member.createDM();
-        await dmChannel.send(
-          `${displayName}さん、イベント「${title}」へのご参加ありがとうございます！\n` +
-          `決済はこちらからお願いします：\n${sessionData.url}\n\n` +
-          `ご不明な点があれば、お気軽にお問い合わせください。`
-        );
-        console.log(`✅ Sent Stripe checkout link to ${displayName}`);
-      } else {
-        console.error('❌ Failed to get Stripe checkout URL:', sessionData.error);
+        if (sessionData.url) {
+          const dmChannel = await member.createDM();
+          await dmChannel.send(
+            `${displayName}さん、イベント「${title}」へのご参加ありがとうございます！\n` +
+            `決済はこちらからお願いします：\n${sessionData.url}\n\n` +
+            `ご不明な点があれば、お気軽にお問い合わせください。`
+          );
+          console.log(`✅ Sent Stripe checkout link to ${displayName}`);
+        } else {
+          console.error('❌ Failed to get Stripe checkout URL:', sessionData.error);
+        }
+      } catch (fetchError) {
+        console.error(`[ERROR] Error during Stripe checkout session fetch: ${fetchError.message}`);
       }
     }
 
-    await fetch(process.env.WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
+    const webhookUrl = process.env.WEBHOOK_URL;
+    console.log(`[DEBUG] WEBHOOK_URL: ${webhookUrl}`);
+    console.log(`[DEBUG] Attempting to send payload to webhook: ${webhookUrl}`);
+    console.log('[DEBUG] Webhook payload:', payload);
+    try {
+      const webhookResponse = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      console.log(`[DEBUG] Webhook response status: ${webhookResponse.status}`);
+      if (!webhookResponse.ok) {
+        console.error(`[ERROR] Webhook request failed with status: ${webhookResponse.status}`);
+        const errorText = await webhookResponse.text();
+        console.error(`[ERROR] Webhook error response: ${errorText}`);
+      }
+    } catch (fetchError) {
+      console.error(`[ERROR] Error during Webhook fetch: ${fetchError.message}`);
+    }
   } catch (err) {
     console.error("❌ Error handling reaction:", err);
   }
