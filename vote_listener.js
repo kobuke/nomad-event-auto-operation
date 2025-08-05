@@ -41,7 +41,7 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
 
     if (reaction.emoji.name === '✅') {
       const railwayPublicDomain = process.env.RAILWAY_PUBLIC_DOMAIN;
-      const stripeCheckoutUrl = `http://${railwayPublicDomain}/create-checkout-session`;
+      const stripeCheckoutUrl = `https://${railwayPublicDomain}/create-checkout-session`;
       console.log(`[DEBUG] RAILWAY_PUBLIC_DOMAIN: ${railwayPublicDomain}`);
       console.log(`[DEBUG] Attempting to fetch Stripe checkout session from: ${stripeCheckoutUrl}`);
       try {
