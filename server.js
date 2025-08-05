@@ -5,11 +5,27 @@ import stripe from 'stripe';
 import dotenv from 'dotenv';
 import { updatePaymentStatus, getEventDetails } from './notionHandler.js';
 import { Client as NotionClient } from '@notionhq/client';
+import { Client as DiscordClient, IntentsBitField } from 'discord.js';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 8080;
+
+const discordClient = new DiscordClient({
+  intents: [
+    IntentsBitField.Flags.Guilds,
+    IntentsBitField.Flags.GuildMessages,
+    IntentsBitField.Flags.MessageContent,
+    IntentsBitField.Flags.DirectMessages,
+  ],
+});
+
+discordClient.login(process.env.DISCORD_BOT_TOKEN);
+
+discordClient.on('ready', () => {
+  console.log(`Logged in to Discord as ${discordClient.user.tag}`);
+});
 
 app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
   const { eventId, userId } = req.body;
@@ -81,6 +97,18 @@ app.post('/stripe-webhook', bodyParser.raw({ type: 'application/json' }), async 
 
     console.log(`✅ Payment completed for Discord ID: ${discordId}`);
     const success = await updatePaymentStatus(discordId, eventId, '支払い済み');
+
+    if (success) {
+      try {
+        const user = await discordClient.users.fetch(discordId);
+        if (user) {
+          await user.send(`イベントへの決済が完了しました！ご参加ありがとうございます。`);
+          console.log(`✅ Sent payment confirmation DM to ${user.tag}`);
+        }
+      } catch (dmError) {
+        console.error(`❌ Failed to send payment confirmation DM to ${discordId}:`, dmError);
+      }
+    }
     res.json({ status: success ? 'success' : 'notion update failed' });
   } else {
     res.json({ status: 'ignored' });

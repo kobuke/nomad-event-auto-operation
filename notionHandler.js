@@ -159,3 +159,51 @@ export const updatePaymentStatus = async (discordUserId, eventId, status = '未�
     return false;
   }
 };
+
+const getTomorrowDate = () => {
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+  return tomorrow.toISOString().split('T')[0];
+};
+
+export const getEventsForTomorrow = async () => {
+  const tomorrow = getTomorrowDate();
+  try {
+    const response = await notion.databases.query({
+      database_id: process.env.NOTION_EVENT_DATABASE_ID,
+      filter: {
+        property: '開催日時', // イベントDBの「開催日時」カラム
+        date: { equals: tomorrow },
+      },
+    });
+    return response.results;
+  } catch (error) {
+    console.error("❌ Failed to fetch tomorrow's events:", error);
+    return [];
+  }
+};
+
+export const getParticipantsForEvent = async (eventId) => {
+  try {
+    const response = await notion.databases.query({
+      database_id: process.env.NOTION_ANSWER_DATABASE_ID, // 参加者DBのID
+      filter: {
+        and: [
+          {
+            property: 'イベント', // 参加者DBの「イベント」リレーションカラム
+            relation: { contains: eventId },
+          },
+          {
+            property: '回答', // 参加者DBの「回答」カラム
+            select: { equals: '参加する' },
+          },
+        ],
+      },
+    });
+    return response.results.map(participant => participant.properties['Discord User ID']?.rich_text[0]?.plain_text);
+  } catch (error) {
+    console.error(`❌ Failed to fetch participants for event ${eventId}:`, error);
+    return [];
+  }
+};
