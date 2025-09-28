@@ -2,11 +2,11 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import stripe from 'stripe';
-import dotenv from 'dotenv';
+
 import { getEventDetailsFromSheet, updatePaymentStatusInSheet } from './googleSheetHandler.js';
 import { Client as DiscordClient, IntentsBitField } from 'discord.js';
 
-dotenv.config();
+
 
 const app = express();
 const PORT = process.env.PORT || 8080;

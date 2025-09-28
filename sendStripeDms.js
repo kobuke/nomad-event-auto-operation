@@ -1,9 +1,6 @@
 
 import { Client, IntentsBitField, GatewayIntentBits } from 'discord.js';
-import dotenv from 'dotenv';
-import { getTodayPaymentParticipantsWithStripeUrl, updatePaymentStatus } from './notionHandler.js';
 
-dotenv.config();
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers],

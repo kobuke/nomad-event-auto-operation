@@ -1,8 +1,6 @@
 import { Client, IntentsBitField } from 'discord.js';
 import { getEventsForTomorrow, getParticipantsForEvent } from './notionHandler.js';
-import dotenv from 'dotenv';
 
-dotenv.config();
 
 const client = new Client({
   intents: [
