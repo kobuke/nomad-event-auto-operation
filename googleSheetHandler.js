@@ -8,6 +8,7 @@ dotenv.config();
 
 const service_account_email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
 console.log('Environment variables:', Object.keys(process.env));
+console.log('service_account_email:', service_account_email);
 const service_account_private_key = process.env.GOOGLE_PRIVATE_KEY;
 const spreadsheet_id = '14Ewx1hGSk4qHrPqO7DeQ0m_TGs14I-u64wOEIb3CGQE';
 
