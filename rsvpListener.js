@@ -43,7 +43,7 @@ const updateRsvpSheet = async (reaction, user, add) => {
       }
 
       // Stripe integration
-      if (reaction.emoji.name === '✅') {
+      if (reaction.emoji.name === event[3]) {
         const eventDetails = await getEventDetailsFromSheet(eventName);
         if (eventDetails && eventDetails.fee > 0) {
           try {
@@ -72,15 +72,16 @@ const updateRsvpSheet = async (reaction, user, add) => {
 
             const dmChannel = await user.createDM();
             await dmChannel.send(
-              `${user.username}さん、イベント「${eventName}」へのご参加ありがとうございます！\n` +
-              `決済はこちらからお願いします：
-[決済URL](${session.url})
+              `🎉 Hello ${user.username}! This is an automated message from Nomad Event Bot. 🎉\n` +
+              `Thank you for showing interest in **${eventName}**! We're so excited to have you.\n` +
+              `Please complete your payment here: 
+[Payment Link](${session.url})
 
 ` +
-              `ご不明な点があれば、お気軽にお問い合わせください。`
+              `If you have any questions, feel free to ask! 😊`
             );
             console.log(`✅ Sent Stripe checkout link to ${user.username}`);
-            await updatePaymentStatusInSheet(user.id, eventName, 'DM送付済み');
+            await updatePaymentStatusInSheet(user.id, eventName, 'DM Sent');
           } catch (stripeError) {
             console.error(`❌ Failed to create Stripe checkout session or send DM:`, stripeError);
           }
