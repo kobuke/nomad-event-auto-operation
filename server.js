@@ -115,6 +115,14 @@ app.post('/stripe-webhook', bodyParser.raw({ type: 'application/json' }), async 
   }
 });
 
+app.get('/success', (req, res) => {
+  res.send('<h1>決済が完了しました！ご参加ありがとうございます。</h1><p>DiscordのDMをご確認ください。</p>');
+});
+
+app.get('/cancel', (req, res) => {
+  res.send('<h1>決済がキャンセルされました。</h1><p>ご不明な点があれば、お問い合わせください。</p>');
+});
+
 // Vote Webhook
 const notion = new NotionClient({ auth: process.env.NOTION_API_TOKEN });
 const NOTION_DB_ID = process.env.NOTION_ANSWER_DATABASE_ID;
