@@ -78,25 +78,6 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
       }
     }
 
-    const webhookUrl = process.env.WEBHOOK_URL;
-    console.log(`[DEBUG] WEBHOOK_URL: ${webhookUrl}`);
-    console.log(`[DEBUG] Attempting to send payload to webhook: ${webhookUrl}`);
-    console.log('[DEBUG] Webhook payload:', payload);
-    try {
-      const webhookResponse = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      console.log(`[DEBUG] Webhook response status: ${webhookResponse.status}`);
-      if (!webhookResponse.ok) {
-        console.error(`[ERROR] Webhook request failed with status: ${webhookResponse.status}`);
-        const errorText = await webhookResponse.text();
-        console.error(`[ERROR] Webhook error response: ${errorText}`);
-      }
-    } catch (fetchError) {
-      console.error(`[ERROR] Error during Webhook fetch: ${fetchError.message}`);
-    }
   } catch (err) {
     console.error("❌ Error handling reaction:", err);
   }
