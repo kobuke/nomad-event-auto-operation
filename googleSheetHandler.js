@@ -4,9 +4,9 @@ import {
 } from 'googleapis';
 import dotenv from 'dotenv';
 
-dotenv.config();
+// dotenv.config();
 
-console.log('Environment variables:', Object.keys(process.env));
+// console.log('Environment variables:', Object.keys(process.env));
 console.log('service_account_email (from process.env):', process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL);
 console.log('service_account_private_key (from process.env):', process.env.GOOGLE_PRIVATE_KEY);
 const service_account_private_key = process.env.GOOGLE_PRIVATE_KEY;
