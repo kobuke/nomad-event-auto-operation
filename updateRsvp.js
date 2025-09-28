@@ -32,7 +32,7 @@ const updateRsvp = async () => {
     const rsvpData = await getSheetData('RSVP');
 
     const eventNames = rsvpData[0].slice(1);
-    const userNames = rsvpData.map(row => row[0]);
+    const userNames = rsvpData.slice(1).map(row => row[0]);
 
     const newRsvpData = rsvpData.map(row => [...row]);
 
