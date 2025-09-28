@@ -2,9 +2,6 @@
 import {
   google
 } from 'googleapis';
-import dotenv from 'dotenv';
-
-// dotenv.config();
 
 // console.log('Environment variables:', Object.keys(process.env));
 console.log('service_account_email (from process.env):', process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL);
