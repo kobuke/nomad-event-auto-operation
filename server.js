@@ -2,9 +2,11 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import stripe from 'stripe';
-
-import { getEventDetailsFromSheet, updatePaymentStatusInSheet } from './googleSheetHandler.js';
+import dotenv from 'dotenv';
+import { getEventDetailsFromSheet, updatePaymentStatusInSheet } = './googleSheetHandler.js';
 import { Client as DiscordClient, IntentsBitField } from 'discord.js';
+
+dotenv.config();
 
 
 

@@ -1,6 +1,9 @@
 
-import { Client, IntentsBitField } from 'discord.js';
+import { Client, GatewayIntentBits } from 'discord.js';
 import { getEventsForTodayPost } from './notionHandler.js';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 
 const client = new Client({

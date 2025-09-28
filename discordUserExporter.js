@@ -1,6 +1,9 @@
 
 import { Client, GatewayIntentBits } from 'discord.js';
 import { getSheetData, appendToSheet } from './googleSheetHandler.js';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 
 const client = new Client({
