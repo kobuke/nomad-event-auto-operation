@@ -3,8 +3,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import stripe from 'stripe';
 import dotenv from 'dotenv';
-import { updatePaymentStatus, getEventDetails } from './notionHandler.js';
-import { Client as NotionClient } from '@notionhq/client';
+import { getEventDetailsFromSheet, updatePaymentStatusInSheet } from './googleSheetHandler.js';
 import { Client as DiscordClient, IntentsBitField } from 'discord.js';
 
 dotenv.config();
@@ -35,7 +34,7 @@ app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
   }
 
   try {
-    const eventDetails = await getEventDetails(eventId);
+    const eventDetails = await getEventDetailsFromSheet(eventId);
     if (!eventDetails) {
       return res.status(404).json({ error: 'Event not found or details missing' });
     }
@@ -96,7 +95,7 @@ app.post('/stripe-webhook', bodyParser.raw({ type: 'application/json' }), async 
     }
 
     console.log(`✅ Payment completed for Discord ID: ${discordId}`);
-    const success = await updatePaymentStatus(discordId, eventId, '支払い済み');
+    const success = await updatePaymentStatusInSheet(discordId, eventId, '支払い済み');
 
     if (success) {
       try {
@@ -109,7 +108,7 @@ app.post('/stripe-webhook', bodyParser.raw({ type: 'application/json' }), async 
         console.error(`❌ Failed to send payment confirmation DM to ${discordId}:`, dmError);
       }
     }
-    res.json({ status: success ? 'success' : 'notion update failed' });
+    res.json({ status: success ? 'success' : 'sheet update failed' });
   } else {
     res.json({ status: 'ignored' });
   }
@@ -121,58 +120,6 @@ app.get('/success', (req, res) => {
 
 app.get('/cancel', (req, res) => {
   res.send('<h1>決済がキャンセルされました。</h1><p>ご不明な点があれば、お問い合わせください。</p>');
-});
-
-// Vote Webhook
-const notion = new NotionClient({ auth: process.env.NOTION_API_TOKEN });
-const NOTION_DB_ID = process.env.NOTION_ANSWER_DATABASE_ID;
-
-const findExistingAnswer = async (user_id, event_id) => {
-  try {
-    const response = await notion.databases.query({
-      database_id: NOTION_DB_ID,
-      filter: {
-        and: [
-          { property: 'Discord User ID', rich_text: { equals: user_id } },
-          { property: 'イベント', relation: { contains: event_id } },
-        ],
-      },
-    });
-    return response.results.length > 0 ? response.results[0].id : null;
-  } catch (error) {
-    console.error('❌ Failed to query Notion:', error);
-    return null;
-  }
-};
-
-app.post('/vote-webhook', bodyParser.json(), async (req, res) => {
-  const { user_id, emoji, event_id, username } = req.body;
-  console.log('✅ Reaction received:', req.body);
-
-  const emojiToAnswer = { '✅': '参加する', '❓': '興味あり', '❌': '参加しない' };
-  const answer = emojiToAnswer[emoji] || '未定義';
-
-  const properties = {
-    'Discord User ID': { rich_text: [{ text: { content: user_id } }] },
-    'User Name': { title: [{ text: { content: username } }] },
-    'イベント': { relation: [{ id: event_id }] },
-    '回答': { select: { name: answer } },
-  };
-
-  try {
-    const existingId = await findExistingAnswer(user_id, event_id);
-    if (existingId) {
-      await notion.pages.update({ page_id: existingId, properties });
-      console.log(`✅ Updated answer for ${user_id} in event ${event_id}`);
-    } else {
-      await notion.pages.create({ parent: { database_id: NOTION_DB_ID }, properties });
-      console.log(`✅ Created answer for ${user_id} in event ${event_id}`);
-    }
-    res.sendStatus(200);
-  } catch (error) {
-    console.error(`❌ Failed to update Notion:`, error);
-    res.sendStatus(500);
-  }
 });
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
