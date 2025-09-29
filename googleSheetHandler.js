@@ -132,6 +132,28 @@ export const updateSheet = async (sheetName, data) => {
 };
 
 
+export const updateCell = async (sheetName, row, col, value) => {
+  try {
+    const range = `${sheetName}!${String.fromCharCode(65 + col)}${row + 1}`;
+    const response = await sheets.spreadsheets.values.update({
+      spreadsheetId: spreadsheet_id,
+      range: range,
+      valueInputOption: 'USER_ENTERED',
+      requestBody: {
+        values: [[value]],
+      },
+    });
+    console.log(`✅ Successfully updated cell ${range} in Google Sheets.`);
+    return response.data;
+  } catch (error) {
+    console.error(`❌ Failed to update cell ${range} in Google Sheets:`, error.message);
+    if (error.response) {
+      console.error('Error response:', error.response.data);
+    }
+    return null;
+  }
+};
+
 export const appendToSheet = async (sheetName, values) => {
   try {
     const response = await sheets.spreadsheets.values.append({

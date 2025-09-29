@@ -1,6 +1,6 @@
 
 import { Client, GatewayIntentBits } from 'discord.js';
-import { getSheetData } from './googleSheetHandler.js';
+import { getSheetData, updateCell } from './googleSheetHandler.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -21,8 +21,9 @@ client.on('ready', async () => {
     const eventNameColumnIndex = header.indexOf('Event Name');
     const threadIdColumnIndex = header.indexOf('Thread ID');
     const deadlineColumnIndex = header.indexOf('〆 Date');
+    const postedColumnIndex = header.indexOf('Posted'); // Assuming Column I is named 'Posted'
 
-    if (eventNameColumnIndex === -1 || threadIdColumnIndex === -1 || deadlineColumnIndex === -1) {
+    if (eventNameColumnIndex === -1 || threadIdColumnIndex === -1 || deadlineColumnIndex === -1 || postedColumnIndex === -1) {
       console.error('❌ Missing required columns in Event Setting sheet.');
       client.destroy();
       return;
@@ -30,12 +31,14 @@ client.on('ready', async () => {
 
     const now = new Date();
 
-    for (const event of events.slice(1)) { // Skip header row
+    for (let i = 1; i < events.length; i++) { // Iterate from the second row (index 1)
+      const event = events[i];
       const eventName = event[eventNameColumnIndex];
       const threadId = event[threadIdColumnIndex];
       const deadline = event[deadlineColumnIndex];
+      const posted = event[postedColumnIndex];
 
-      if (deadline && deadline !== '-') {
+      if (deadline && deadline !== '-' && posted !== '✅') {
         const deadlineDate = new Date(deadline);
 
         if (now > deadlineDate) {
@@ -47,6 +50,7 @@ client.on('ready', async () => {
                 `Thank you to everyone who showed interest and signed up! We're so excited for the event! ✨`
               );
               console.log(`✅ Sent deadline message for event: ${eventName}`);
+              await updateCell('Event Setting', i, postedColumnIndex, '✅'); // Update Column I with ✅
             } else {
               console.error(`❌ Discord thread not found: ${threadId}`);
             }
