@@ -20,7 +20,6 @@
     "start:server": "node server.js",
     "start:rsvp-listener": "node rsvpListener.js",
     "export-users": "node discordUserExporter.js",
-    "update-rsvp": "node updateRsvp.js",
-    "check-deadlines": "node deadlineChecker.js"
+    "update-rsvp": "node updateRsvp.js"
   }
 }
