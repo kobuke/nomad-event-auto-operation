@@ -72,12 +72,10 @@ const updateRsvpSheet = async (reaction, user, add) => {
 
             const dmChannel = await user.createDM();
             await dmChannel.send(
-              `🎉 Hello ${user.username}! This is an automated message from Nomad Event Bot. 🎉\n` +
+              `--------------\n**【${eventName}】**\n\n🎉 Hello ${user.username}! This is an automated message from Nomad Event Bot. 🎉\n` +
               `Thank you for showing interest in **${eventName}**! We're so excited to have you.\n` +
               `Please complete your payment here: 
-[Payment Link](${session.url})
-
-` +
+[Payment Link](${session.url}\n--------------` +
               `If you have any questions, feel free to ask! 😊`
             );
             console.log(`✅ Sent Stripe checkout link to ${user.username}`);
