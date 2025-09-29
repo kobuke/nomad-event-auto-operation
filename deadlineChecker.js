@@ -39,7 +39,7 @@ client.on('ready', async () => {
       const posted = event[postedColumnIndex];
 
       if (deadline && deadline !== '-' && posted !== '✅') {
-        const deadlineDate = new Date(deadline);
+        const deadlineDate = new Date(`${now.getFullYear()}/${deadline}`);
 
         if (now > deadlineDate) {
           try {
