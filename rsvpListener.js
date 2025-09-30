@@ -110,11 +110,18 @@ const updateRsvpSheet = async (reaction, user, add) => {
     const maxCap = parseInt(event[maxCapColumnIndex], 10);
     const mcStatus = event[mcColumnIndex];
 
-    const currentParticipants = reaction.message.reactions.cache.get(event[3])?.count || 0;
-    console.log("現在のRSVPの数は：" + currentParticipants);
-    console.log(newRsvpData.slice(1));
+    // Fetch reactions to ensure up-to-date count
     const threadId = event[1]; // Assuming Thread ID is in Column B
     const channel = await client.channels.fetch(threadId);
+    const message = await channel.messages.fetch(reaction.message.id);
+    // For standard emojis, name is the identifier. For custom, id is the identifier.
+    const emojiIdentifier = reaction.emoji.id || reaction.emoji.name;
+    const reactionManager = message.reactions.cache;
+    const specificReaction = reactionManager.get(emojiIdentifier);
+    const currentParticipants = specificReaction ? specificReaction.count : 0;
+
+    console.log("現在のRSVPの数は：" + currentParticipants);
+    console.log(newRsvpData.slice(1));
 
     if (maxCap > 0) {
       if (currentParticipants >= maxCap && mcStatus !== '✅') {
@@ -124,7 +131,7 @@ const updateRsvpSheet = async (reaction, user, add) => {
             `We're so excited by the overwhelming interest! If a spot opens up, we'll let you know! ✨`
           );
           console.log(`✅ Sent capacity reached message for event: ${eventName}`);
-          await updateCell('Event Setting', eventRowIndex, mcColumnIndex, '✅');
+          await updateCell('Event Setting', eventRowIndex - 1, mcColumnIndex, '✅');
         }
       } else if (currentParticipants < maxCap && mcStatus === '✅') {
         if (channel) {
@@ -133,7 +140,7 @@ const updateRsvpSheet = async (reaction, user, add) => {
             `There's still a chance to join! Don't miss out! 🚀`
           );
           console.log(`✅ Sent capacity available message for event: ${eventName}`);
-          await updateCell('Event Setting', eventRowIndex, mcColumnIndex, '');
+          await updateCell('Event Setting', eventRowIndex - 1, mcColumnIndex, '✅');
         }
       }
     }
