@@ -131,7 +131,7 @@ const updateRsvpSheet = async (reaction, user, add) => {
             `We're so excited by the overwhelming interest! If a spot opens up, we'll let you know! ✨`
           );
           console.log(`✅ Sent capacity reached message for event: ${eventName}`);
-          await updateCell('Event Setting', eventRowIndex - 1, mcColumnIndex, '✅');
+          await updateCell('Event Setting', eventRowIndex, mcColumnIndex, '✅');
         }
       } else if (currentParticipants < maxCap && mcStatus === '✅') {
         if (channel) {
@@ -140,7 +140,7 @@ const updateRsvpSheet = async (reaction, user, add) => {
             `There's still a chance to join! Don't miss out! 🚀`
           );
           console.log(`✅ Sent capacity available message for event: ${eventName}`);
-          await updateCell('Event Setting', eventRowIndex - 1, mcColumnIndex, '✅');
+          await updateCell('Event Setting', eventRowIndex, mcColumnIndex, '');
         }
       }
     }
