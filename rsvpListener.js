@@ -53,8 +53,8 @@ const updateRsvpSheet = async (reaction, user, add) => {
           const paymentData = await getSheetData(paymentsSheetName);
           const paymentHeader = paymentData[0];
           const eventColumnIndex = paymentHeader.indexOf(eventName);
-          // Assuming Discord ID is in the second column (index 1) of the 'Payments' sheet
-          const discordIdColumnIndex = 1; 
+          // Assuming Discord ID is in the first column (index 0) of the 'Payments' sheet
+          const discordIdColumnIndex = 0; 
           const userPaymentRow = paymentData.find(row => row[discordIdColumnIndex] === user.id);
 
           let currentPaymentStatus = '';
