@@ -48,41 +48,59 @@ const updateRsvpSheet = async (reaction, user, add) => {
       if (reaction.emoji.name === event[3]) {
         const eventDetails = await getEventDetailsFromSheet(eventName);
         if (eventDetails && eventDetails.fee > 0) {
-          try {
-            const session = await stripeClient.checkout.sessions.create({
-              payment_method_types: ['card'],
-              line_items: [
-                {
-                  price_data: {
-                    currency: 'jpy',
-                    product_data: {
-                      name: eventDetails.title,
-                    },
-                    unit_amount: eventDetails.fee,
-                  },
-                  quantity: 1,
-                },
-              ],
-              mode: 'payment',
-              success_url: `https://${process.env.RAILWAY_PUBLIC_DOMAIN}/success?session_id={CHECKOUT_SESSION_ID}`,
-              cancel_url: `https://${process.env.RAILWAY_PUBLIC_DOMAIN}/cancel`,
-              metadata: {
-                discord_id: user.id,
-                event_id: eventName,
-              },
-            });
+          // Check payment status before sending a new Stripe link
+          const paymentsSheetName = 'Payments';
+          const paymentData = await getSheetData(paymentsSheetName);
+          const paymentHeader = paymentData[0];
+          const eventColumnIndex = paymentHeader.indexOf(eventName);
+          // Assuming Discord ID is in the second column (index 1) of the 'Payments' sheet
+          const discordIdColumnIndex = 1; 
+          const userPaymentRow = paymentData.find(row => row[discordIdColumnIndex] === user.id);
 
-            const dmChannel = await user.createDM();
-            await dmChannel.send(
-              `--------------\n**【${eventName}】**\n\n🎉 Hello ${user.username}! This is an automated message from Nomad Event Bot. 🎉\n` +
-              `Thank you for showing interest in **${eventName}**! We're so excited to have you.\n` +
-              `Please complete your payment here:\n👉[Payment Link](${session.url})\n` +
-              `If you have any questions, feel free to ask! 😊\n--------------`
-            );
-            console.log(`✅ Sent Stripe checkout link to ${user.username}`);
-            await updatePaymentStatusInSheet(user.id, eventName, 'DM Sent');
-          } catch (stripeError) {
-            console.error(`❌ Failed to create Stripe checkout session or send DM:`, stripeError);
+          let currentPaymentStatus = '';
+          if (userPaymentRow && eventColumnIndex > -1) {
+            currentPaymentStatus = userPaymentRow[eventColumnIndex];
+          }
+
+          if (currentPaymentStatus === 'DM Sent' || currentPaymentStatus === 'Done') {
+            console.log(`✅ Payment DM for ${eventName} already sent or completed for ${user.username}. Skipping.`);
+          } else {
+            try {
+              const session = await stripeClient.checkout.sessions.create({
+                payment_method_types: ['card'],
+                line_items: [
+                  {
+                    price_data: {
+                      currency: 'jpy',
+                      product_data: {
+                        name: eventDetails.title,
+                      },
+                      unit_amount: eventDetails.fee,
+                    },
+                    quantity: 1,
+                  },
+                ],
+                mode: 'payment',
+                success_url: `https://${process.env.RAILWAY_PUBLIC_DOMAIN}/success?session_id={CHECKOUT_SESSION_ID}`,
+                cancel_url: `https://${process.env.RAILWAY_PUBLIC_DOMAIN}/cancel`,
+                metadata: {
+                  discord_id: user.id,
+                  event_id: eventName,
+                },
+              });
+
+              const dmChannel = await user.createDM();
+              await dmChannel.send(
+                `--------------\n**【${eventName}】**\n\n🎉 Hello ${user.username}! This is an automated message from Nomad Event Bot. 🎉\n` +
+                `Thank you for showing interest in **${eventName}**! We're so excited to have you.\n` +
+                `Please complete your payment here:\n👉[Payment Link](${session.url})\n` +
+                `If you have any questions, feel free to ask! 😊\n--------------`
+              );
+              console.log(`✅ Sent Stripe checkout link to ${user.username}`);
+              await updatePaymentStatusInSheet(user.id, eventName, 'DM Sent');
+            } catch (stripeError) {
+              console.error(`❌ Failed to create Stripe checkout session or send DM:`, stripeError);
+            }
           }
         }
       }
@@ -121,7 +139,6 @@ const updateRsvpSheet = async (reaction, user, add) => {
     const currentParticipants = specificReaction ? specificReaction.count : 0;
 
     console.log("現在のRSVPの数は：" + currentParticipants);
-    console.log(newRsvpData.slice(1));
 
     if (maxCap > 0) {
       if (currentParticipants >= maxCap && mcStatus !== '✅') {
