@@ -1,6 +1,6 @@
 
 import { Client, GatewayIntentBits, Partials } from 'discord.js';
-import { getSheetData, updateSheet, getEventDetailsFromSheet, updatePaymentStatusInSheet } from './googleSheetHandler.js';
+import { getSheetData, updateSheet, getEventDetailsFromSheet, updatePaymentStatusInSheet, updateCell } from './googleSheetHandler.js';
 import dotenv from 'dotenv';
 import stripe from 'stripe';
 
@@ -74,8 +74,7 @@ const updateRsvpSheet = async (reaction, user, add) => {
             await dmChannel.send(
               `--------------\n**【${eventName}】**\n\n🎉 Hello ${user.username}! This is an automated message from Nomad Event Bot. 🎉\n` +
               `Thank you for showing interest in **${eventName}**! We're so excited to have you.\n` +
-              `Please complete your payment here: 
-[Payment Link](${session.url})` +
+              `Please complete your payment here:\n👉[Payment Link](${session.url})\n` +
               `If you have any questions, feel free to ask! 😊\n--------------`
             );
             console.log(`✅ Sent Stripe checkout link to ${user.username}`);
