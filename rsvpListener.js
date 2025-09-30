@@ -36,6 +36,7 @@ const updateRsvpSheet = async (reaction, user, add) => {
     if (userIndex === -1 || eventIndex === -1) return;
 
     const newRsvpData = rsvpData.map(row => [...row]);
+    console.log("newRsvpData:" + newRsvpData);
 
     if (add) {
       if (!newRsvpData[userIndex][eventIndex]) {
