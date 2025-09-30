@@ -22,8 +22,12 @@ client.on('ready', async () => {
     const threadIdColumnIndex = header.indexOf('Thread ID');
     const deadlineColumnIndex = header.indexOf('〆 Date');
     const postedColumnIndex = header.indexOf('Posted'); // Assuming Column I is named 'Posted'
+    const remind1DateColumnIndex = header.indexOf('Remind1 Date');
+    const r1ColumnIndex = header.indexOf('R1');
+    const remind2DateColumnIndex = header.indexOf('Remind2 Date');
+    const r2ColumnIndex = header.indexOf('R2');
 
-    if (eventNameColumnIndex === -1 || threadIdColumnIndex === -1 || deadlineColumnIndex === -1 || postedColumnIndex === -1) {
+    if (eventNameColumnIndex === -1 || threadIdColumnIndex === -1 || deadlineColumnIndex === -1 || postedColumnIndex === -1 || remind1DateColumnIndex === -1 || r1ColumnIndex === -1 || remind2DateColumnIndex === -1 || r2ColumnIndex === -1) {
       console.error('❌ Missing required columns in Event Setting sheet.');
       client.destroy();
       return;
@@ -37,7 +41,12 @@ client.on('ready', async () => {
       const threadId = event[threadIdColumnIndex];
       const deadline = event[deadlineColumnIndex];
       const posted = event[postedColumnIndex];
+      const remind1Date = event[remind1DateColumnIndex];
+      const r1Status = event[r1ColumnIndex];
+      const remind2Date = event[remind2DateColumnIndex];
+      const r2Status = event[r2ColumnIndex];
 
+      // Deadline check
       if (deadline && deadline !== '-' && posted !== '✅') {
         const deadlineDate = new Date(`${now.getFullYear()}/${deadline}`);
 
@@ -50,13 +59,59 @@ client.on('ready', async () => {
                 `Thank you to everyone who showed interest and signed up! We're so excited for the event! ✨`
               );
               console.log(`✅ Sent deadline message for event: ${eventName}`);
-              await updateCell('Event Setting', i, postedColumnIndex, '✅'); // Update Column I with ✅
+              await updateCell('Event Setting', i, postedColumnIndex, '✅');
             } else {
               console.error(`❌ Discord thread not found: ${threadId}`);
             }
           } catch (discordError) {
             console.error(`❌ Failed to send deadline message for event ${eventName}:`, discordError);
           }
+        }
+      }
+
+      // Reminder 1 check
+      if (remind1Date && remind1Date !== '-' && r1Status !== '✅') {
+        const remind1DateTime = new Date(`${now.getFullYear()}/${remind1Date}`);
+
+        if (now > remind1DateTime) {
+          try {
+            const channel = await client.channels.fetch(threadId);
+            if (channel) {
+              await channel.send(
+                `🔔 **Friendly Reminder: ${eventName} is coming up soon!** 🔔\n` +
+                `Just a quick heads-up about ${eventName}. Don't miss out! ✨`
+              );
+              console.log(`✅ Sent Reminder 1 message for event: ${eventName}`);
+              await updateCell('Event Setting', i, r1ColumnIndex, '✅');
+            } else {
+              console.error(`❌ Discord thread not found: ${threadId}`);
+            }
+          } catch (discordError) {
+            console.error(`❌ Failed to send Reminder 1 message for event ${eventName}:`, discordError);
+          }
+        }
+      }
+
+      // Reminder 2 check
+      if (remind2Date && remind2Date !== '-' && r2Status !== '✅') {
+        const remind2DateTime = new Date(`${now.getFullYear()}/${remind2Date}`);
+
+        if (now > remind2DateTime) {
+          try {
+            const channel = await client.channels.fetch(threadId);
+            if (channel) {
+              await channel.send(
+                `⏰ **Last Chance Reminder: ${eventName} is almost here!** ⏰\n` +
+                `This is your final reminder for ${eventName}. Get ready! 🚀`
+              );
+              console.log(`✅ Sent Reminder 2 message for event: ${eventName}`);
+              await updateCell('Event Setting', i, r2ColumnIndex, '✅');
+            } else {
+              console.error(`❌ Discord thread not found: ${threadId}`);
+            }
+          }
+        } catch (discordError) {
+          console.error(`❌ Failed to send Reminder 2 message for event ${eventName}:`, discordError);
         }
       }
     }
