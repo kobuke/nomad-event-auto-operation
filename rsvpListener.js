@@ -29,6 +29,7 @@ const updateRsvpSheet = async (reaction, user, add) => {
     const rsvpData = await getSheetData('RSVP');
     const userNames = rsvpData.map(row => row[0]);
     const eventNames = rsvpData[0];
+    console.log("rsvpData: " + rsvpData);
 
     const userIndex = userNames.indexOf(user.username);
     const eventIndex = eventNames.indexOf(eventName);
