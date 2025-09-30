@@ -110,8 +110,10 @@ client.on('ready', async () => {
               console.error(`❌ Discord thread not found: ${threadId}`);
             }
           }
-        } catch (discordError) {
-          console.error(`❌ Failed to send Reminder 2 message for event ${eventName}:`, discordError);
+            } catch (discordError) {
+              console.error(`❌ Failed to send Reminder 2 message for event ${eventName}:`, discordError);
+            }
+          }
         }
       }
     }
