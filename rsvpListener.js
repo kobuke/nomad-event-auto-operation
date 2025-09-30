@@ -55,7 +55,7 @@ const updateRsvpSheet = async (reaction, user, add) => {
           const eventColumnIndex = paymentHeader.indexOf(eventName);
           // Assuming Discord ID is in the first column (index 0) of the 'Payments' sheet
           const discordIdColumnIndex = 0; 
-          const userPaymentRow = paymentData.find(row => row[discordIdColumnIndex] === user.id);
+          const userPaymentRow = paymentData.find(row => row[discordIdColumnIndex] === user.username);
           const userPaymentRow2 = paymentData.find(row => row[discordIdColumnIndex] === user.id);
           console.log("userPaymentRow：" + userPaymentRow); //チェックのため追記
           console.log("userPaymentRow：" + userPaymentRow2); //チェックのため追記
