@@ -109,7 +109,7 @@ const updateRsvpSheet = async (reaction, user, add) => {
     const mcStatus = event[mcColumnIndex];
 
     const currentParticipants = rsvpData.slice(1).filter(row => row[eventIndex]).length;
-
+    console.log("現在のRSVPの数は：" + currentParticipants);
     const threadId = event[1]; // Assuming Thread ID is in Column B
     const channel = await client.channels.fetch(threadId);
 
