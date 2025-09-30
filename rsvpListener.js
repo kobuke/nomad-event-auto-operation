@@ -36,7 +36,6 @@ const updateRsvpSheet = async (reaction, user, add) => {
     if (userIndex === -1 || eventIndex === -1) return;
 
     const newRsvpData = rsvpData.map(row => [...row]);
-    console.log('newRsvpData before update:', newRsvpData);
 
     if (add) {
       if (!newRsvpData[userIndex][eventIndex]) {
@@ -73,10 +72,10 @@ const updateRsvpSheet = async (reaction, user, add) => {
 
             const dmChannel = await user.createDM();
             await dmChannel.send(
-              `🎉 Hello ${user.username}! This is an automated message from Nomad Event Bot. 🎉\n` +
+              `--------------\n**【${eventName}】**\n\n🎉 Hello ${user.username}! This is an automated message from Nomad Event Bot. 🎉\n` +
               `Thank you for showing interest in **${eventName}**! We're so excited to have you.\n` +
               `Please complete your payment here:\n👉[Payment Link](${session.url})\n` +
-              `If you have any questions, feel free to ask! 😊`
+              `If you have any questions, feel free to ask! 😊\n--------------`
             );
             console.log(`✅ Sent Stripe checkout link to ${user.username}`);
             await updatePaymentStatusInSheet(user.id, eventName, 'DM Sent');
@@ -90,7 +89,6 @@ const updateRsvpSheet = async (reaction, user, add) => {
       newRsvpData[userIndex][eventIndex] = '';
     }
 
-    console.log('newRsvpData after update:', newRsvpData);
     await updateSheet('RSVP', newRsvpData);
     console.log(`✅ RSVP sheet updated for ${user.username} - Event: ${eventName}`);
 
