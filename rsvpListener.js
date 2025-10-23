@@ -21,7 +21,7 @@ const client = new Client({
 const updateRsvpSheet = async (reaction, user, add) => {
   try {
     const events = await getSheetData('Event Setting');
-    const event = events.find(row => row[2] === reaction.message.id && row[2] === reaction.emoji.name);
+    const event = events.find(row => row[2] === reaction.message.id && row[3] === reaction.emoji.name);
 
     if (!event) return;
 
@@ -45,7 +45,7 @@ const updateRsvpSheet = async (reaction, user, add) => {
       }
 
       // Stripe integration
-      if (reaction.emoji.name === event[2]) {
+      if (reaction.emoji.name === event[3]) {
         const eventDetails = await getEventDetailsFromSheet(eventName);
         if (eventDetails && eventDetails.fee > 0) {
           // Check payment status before sending a new Stripe link
