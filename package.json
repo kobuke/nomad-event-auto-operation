@@ -15,10 +15,9 @@
     "yargs": "^17.0.0"
   },
   "scripts": {
-    "start": "npm-run-all --parallel start:vote-listener start:server start:rsvp-listener",
-    "start:vote-listener": "node vote_listener.js",
-    "start:server": "node server.js",
+    "start": "npm-run-all --parallel start:server start:rsvp-listener",
     "start:rsvp-listener": "node rsvpListener.js",
+
     "export-users": "node discordUserExporter.js",
     "update-rsvp": "node updateRsvp.js"
   }
