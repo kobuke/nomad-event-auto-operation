@@ -21,9 +21,11 @@ const client = new Client({
 const updateRsvpSheet = async (reaction, user, add) => {
   try {
     const events = await getSheetData('Event Setting');
-    const event = events.find(row => row[2] === reaction.message.id && row[3] === reaction.emoji.name);
+    const event = events.find(row => row[2] === reaction.message.id);
 
     if (!event) return;
+
+    const customEmoji = event[3]; // Column D for the reaction emoji
 
     const eventName = event[0];
     const rsvpData = await getSheetData('RSVP');
