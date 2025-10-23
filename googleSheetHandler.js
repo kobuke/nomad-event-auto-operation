@@ -8,7 +8,7 @@ dotenv.config();
 
 const service_account_email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
 const service_account_private_key = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
-const spreadsheet_id = '14Ewx1hGSk4qHrPqO7DeQ0m_TGs14I-u64wOEIb3CGQE';
+const spreadsheet_id = '1W3LhDDCrepQmZEOCAXSaOCESw4gKdPxFYoC5YCrUE_c';
 
 const auth = new google.auth.GoogleAuth({
   credentials: {
