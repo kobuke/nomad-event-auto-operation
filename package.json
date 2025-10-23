@@ -16,6 +16,7 @@
   },
   "scripts": {
     "start": "npm-run-all --parallel start:server start:rsvp-listener",
+    "start:server": "node server.js",
     "start:rsvp-listener": "node rsvpListener.js",
 
     "export-users": "node discordUserExporter.js",
