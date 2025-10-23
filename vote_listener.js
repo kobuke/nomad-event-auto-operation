@@ -30,12 +30,20 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
     const member = await reaction.message.guild.members.fetch(user.id);
     const displayName = member.displayName || user.username;
 
+    const trimmedEventId = event_id?.trim();
+
+    if (!trimmedEventId) {
+      // Not a valid event message, ignore the reaction.
+      console.log(`Ignoring reaction on a message without a valid event ID: "${reaction.message.content}"`);
+      return;
+    }
+
     const payload = {
       user_id: user.id,
       username: displayName,
       emoji: reaction.emoji.name,
       message_id: reaction.message.id,
-      event_id: event_id?.trim() || null,
+      event_id: trimmedEventId,
     };
 
     console.log("✅ Reaction payload:", payload);
@@ -49,14 +57,17 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
         const createSessionResponse = await fetch(stripeCheckoutUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ eventId: event_id?.trim(), userId: user.id }),
+          body: JSON.stringify({ eventId: trimmedEventId, userId: user.id }),
         });
         console.log(`[DEBUG] Stripe checkout session response status: ${createSessionResponse.status}`);
+
         if (!createSessionResponse.ok) {
-          console.error(`[ERROR] Stripe checkout session request failed with status: ${createSessionResponse.status}`);
           const errorText = await createSessionResponse.text();
+          console.error(`[ERROR] Stripe checkout session request failed with status: ${createSessionResponse.status}`);
           console.error(`[ERROR] Stripe checkout session error response: ${errorText}`);
+          return;
         }
+
         const sessionData = await createSessionResponse.json();
         console.log('[DEBUG] Stripe session data:', sessionData);
 
@@ -72,7 +83,7 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
           );
           console.log(`✅ Sent Stripe checkout link to ${displayName}`);
         } else {
-          console.error('❌ Failed to get Stripe checkout URL:', sessionData.error);
+          console.error('❌ Failed to get Stripe checkout URL:', sessionData.error || 'No URL in response');
         }
       } catch (fetchError) {
         console.error(`[ERROR] Error during Stripe checkout session fetch: ${fetchError.message}`);
