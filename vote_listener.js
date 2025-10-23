@@ -1,6 +1,7 @@
 import { Client, GatewayIntentBits, Partials, Events } from 'discord.js';
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
+import { getSheetData } from './googleSheetHandler.js';
 dotenv.config();
 
 
@@ -23,6 +24,17 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
 
   try {
     await reaction.fetch(); // Ensure full reaction object
+
+    // Fetch event settings from Google Sheet
+    const events = await getSheetData('Event Setting');
+    const eventSetting = events.find(row => row[2] === reaction.message.id);
+
+    if (!eventSetting) {
+      // Not a message with a configured event setting, ignore.
+      return;
+    }
+
+    const customEmoji = eventSetting[3]; // Column D
 
     const [eventTitleLine] = reaction.message.content.split('\n');
     const [title, event_id] = eventTitleLine.replace('📢 ', '').split(' | ');
@@ -48,7 +60,8 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
 
     console.log("✅ Reaction payload:", payload);
 
-    if (reaction.emoji.name === '✅') {
+    // Check if the reaction emoji is the one specified for payment
+    if (reaction.emoji.name === customEmoji) {
       const railwayPublicDomain = process.env.RAILWAY_PUBLIC_DOMAIN;
       const stripeCheckoutUrl = `https://${railwayPublicDomain}/create-checkout-session`;
       console.log(`[DEBUG] RAILWAY_PUBLIC_DOMAIN: ${railwayPublicDomain}`);
