@@ -174,11 +174,13 @@ client.on('ready', () => {
 });
 
 client.on('messageReactionAdd', async (reaction, user) => {
+  console.log(`[DEBUG] Reaction added: ${reaction.emoji.name} by ${user.tag}`);
   if (user.bot) return;
   await updateRsvpSheet(reaction, user, true);
 });
 
 client.on('messageReactionRemove', async (reaction, user) => {
+  console.log(`[DEBUG] Reaction removed: ${reaction.emoji.name} by ${user.tag}`);
   if (user.bot) return;
   await updateRsvpSheet(reaction, user, false);
 });
