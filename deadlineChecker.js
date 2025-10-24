@@ -9,6 +9,7 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildMembers,
   ],
 });
 
@@ -16,6 +17,29 @@ client.on('ready', async () => {
   console.log(`Logged in as ${client.user.tag}!`);
 
   try {
+    console.log('[DEBUG] Starting user export to Users sheet...');
+    const guild = await client.guilds.fetch(process.env.DISCORD_GUILD_ID);
+    const channel = await guild.channels.fetch(process.env.DISCORD_CHANNEL_ID);
+    const members = await guild.members.fetch();
+
+    const channelMembers = members.filter(member => channel.permissionsFor(member).has('ViewChannel'));
+
+    const usersToExport = channelMembers.map(member => [member.user.username, member.user.id]);
+
+    // Add header row
+    const usersSheetData = [['userName', 'userId'], ...usersToExport];
+
+    await updateSheet('Users', usersSheetData);
+    console.log(`✅ Successfully exported ${usersToExport.length} users to Google Sheets (Users sheet).`);
+
+    // Prepare mention string for all users
+    const allUsersData = await getSheetData('Users');
+    const allUserMentions = allUsersData.slice(1) // Skip header row
+                                        .map(row => `<@${row[1]}>`) // Assuming userId is in column B (index 1)
+                                        .join(' ');
+    console.log(`[DEBUG] All user mentions prepared: ${allUserMentions}`);
+
+    // Existing event processing logic starts here
     const events = await getSheetData('Event Setting');
     const header = events[0];
     const eventNameColumnIndex = header.indexOf('Event Name');
@@ -61,7 +85,7 @@ client.on('ready', async () => {
             const channel = await client.channels.fetch(threadId);
             if (channel) {
               await channel.send(
-                `📢 **Recruitment for ${eventName} has officially closed!** 📢\n` +
+                `${allUserMentions}\n📢 **Recruitment for ${eventName} has officially closed!** 📢\n` +
                 `Thank you to everyone who showed interest and signed up! We're so excited for the event! ✨`
               );
               console.log(`✅ Sent deadline message for event: ${eventName}`);
@@ -85,7 +109,7 @@ client.on('ready', async () => {
             const channel = await client.channels.fetch(threadId);
             if (channel) {
               await channel.send(
-                `🔔 **Friendly Reminder: ${eventName} is coming up soon!** 🔔\n` +
+                `${allUserMentions}\n🔔 **Friendly Reminder: ${eventName} is coming up soon!** 🔔\n` +
                 `Just a quick heads-up about ${eventName}. Don't miss out! ✨`
               );
               console.log(`✅ Sent Reminder 1 message for event: ${eventName}`);
@@ -109,7 +133,7 @@ client.on('ready', async () => {
             const channel = await client.channels.fetch(threadId);
             if (channel) {
               await channel.send(
-                `⏰ **Last Chance Reminder: ${eventName} is almost here!** ⏰\n` +
+                `${allUserMentions}\n⏰ **Last Chance Reminder: ${eventName} is almost here!** ⏰\n` +
                 `This is your final reminder for ${eventName}. Get ready! 🚀`
               );
               console.log(`✅ Sent Reminder 2 message for event: ${eventName}`);
