@@ -46,9 +46,15 @@ client.on('ready', async () => {
       const remind2Date = event[remind2DateColumnIndex];
       const r2Status = event[r2ColumnIndex];
 
+      console.log(`[DEBUG] Processing event: ${eventName}`);
+      console.log(`[DEBUG] Raw Remind1 Date: ${remind1Date}, R1 Status: ${r1Status}`);
+      console.log(`[DEBUG] Raw Remind2 Date: ${remind2Date}, R2 Status: ${r2Status}`);
+      console.log(`[DEBUG] Current time: ${now}`);
+
       // Deadline check
       if (deadline && deadline !== '-' && posted !== '✅') {
         const deadlineDate = new Date(`${now.getFullYear()}/${deadline}`);
+        console.log(`[DEBUG] Parsed Deadline Date: ${deadlineDate}, Comparison (now > deadlineDate): ${now > deadlineDate}`);
 
         if (now > deadlineDate) {
           try {
@@ -72,6 +78,7 @@ client.on('ready', async () => {
       // Reminder 1 check
       if (remind1Date && remind1Date !== '-' && r1Status !== '✅') {
         const remind1DateTime = new Date(`${now.getFullYear()}/${remind1Date}`);
+        console.log(`[DEBUG] Parsed Remind1 Date: ${remind1DateTime}, Comparison (now > remind1DateTime): ${now > remind1DateTime}`);
 
         if (now > remind1DateTime) {
           try {
@@ -95,6 +102,7 @@ client.on('ready', async () => {
       // Reminder 2 check
       if (remind2Date && remind2Date !== '-' && r2Status !== '✅') {
         const remind2DateTime = new Date(`${now.getFullYear()}/${remind2Date}`);
+        console.log(`[DEBUG] Parsed Remind2 Date: ${remind2DateTime}, Comparison (now > remind2DateTime): ${now > remind2DateTime}`);
 
         if (now > remind2DateTime) {
           try {
