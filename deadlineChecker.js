@@ -53,7 +53,7 @@ client.on('ready', async () => {
 
       // Deadline check
       if (deadline && deadline !== '-' && posted !== '✅') {
-        const deadlineDate = new Date(`${now.getFullYear()}/${deadline}`);
+        const deadlineDate = new Date(`${now.getFullYear()}/${deadline} GMT+0800`);
         console.log(`[DEBUG] Parsed Deadline Date: ${deadlineDate}, Comparison (now > deadlineDate): ${now > deadlineDate}`);
 
         if (now > deadlineDate) {
@@ -77,7 +77,7 @@ client.on('ready', async () => {
 
       // Reminder 1 check
       if (remind1Date && remind1Date !== '-' && r1Status !== '✅') {
-        const remind1DateTime = new Date(`${now.getFullYear()}/${remind1Date}`);
+        const remind1DateTime = new Date(`${now.getFullYear()}/${remind1Date} GMT+0800`);
         console.log(`[DEBUG] Parsed Remind1 Date: ${remind1DateTime}, Comparison (now > remind1DateTime): ${now > remind1DateTime}`);
 
         if (now > remind1DateTime) {
@@ -101,7 +101,7 @@ client.on('ready', async () => {
 
       // Reminder 2 check
       if (remind2Date && remind2Date !== '-' && r2Status !== '✅') {
-        const remind2DateTime = new Date(`${now.getFullYear()}/${remind2Date}`);
+        const remind2DateTime = new Date(`${now.getFullYear()}/${remind2Date} GMT+0800`);
         console.log(`[DEBUG] Parsed Remind2 Date: ${remind2DateTime}, Comparison (now > remind2DateTime): ${now > remind2DateTime}`);
 
         if (now > remind2DateTime) {
