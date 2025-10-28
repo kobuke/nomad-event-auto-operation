@@ -68,7 +68,7 @@ export const updatePaymentStatusInSheet = async (discordUserId, eventName, statu
     const paymentsData = await getSheetData('Payments');
     const usersData = await getSheetData('Users');
 
-    const userIdColumnIndex = usersData[0].indexOf('User ID');
+    const userIdColumnIndex = usersData[0].indexOf('userId');
     if (userIdColumnIndex === -1) {
       console.error('❌ Missing User ID column in Users sheet.');
       return false;

@@ -21,9 +21,13 @@ const client = new Client({
 const updateRsvpSheet = async (reaction, user, add) => {
   try {
     const events = await getSheetData('Event Setting');
-    const event = events.find(row => row[2] === reaction.message.id && row[3] === reaction.emoji.name);
+    const event = events.find(row => row[2] === reaction.message.id);
+    console.log(`[DEBUG] Found event based on message ID: ${event ? event[0] : 'None'}`);
 
     if (!event) return;
+
+    const customEmoji = event[3]; // Column D for the reaction emoji
+    console.log(`[DEBUG] Custom emoji for event: ${customEmoji}`);
 
     const eventName = event[0];
     const rsvpData = await getSheetData('RSVP');
@@ -33,6 +37,7 @@ const updateRsvpSheet = async (reaction, user, add) => {
 
     const userIndex = userNames.indexOf(user.username);
     const eventIndex = eventNames.indexOf(eventName);
+    console.log(`[DEBUG] User: ${user.username}, User Index: ${userIndex}, Event: ${eventName}, Event Index: ${eventIndex}`);
 
     if (userIndex === -1 || eventIndex === -1) return;
 
@@ -45,6 +50,7 @@ const updateRsvpSheet = async (reaction, user, add) => {
       }
 
       // Stripe integration
+      console.log(`[DEBUG] Reaction emoji: ${reaction.emoji.name}, Expected custom emoji: ${customEmoji}`);
       if (reaction.emoji.name === event[3]) {
         const eventDetails = await getEventDetailsFromSheet(eventName);
         if (eventDetails && eventDetails.fee > 0) {
@@ -172,11 +178,13 @@ client.on('ready', () => {
 });
 
 client.on('messageReactionAdd', async (reaction, user) => {
+  console.log(`[DEBUG] Reaction added: ${reaction.emoji.name} by ${user.tag}`);
   if (user.bot) return;
   await updateRsvpSheet(reaction, user, true);
 });
 
 client.on('messageReactionRemove', async (reaction, user) => {
+  console.log(`[DEBUG] Reaction removed: ${reaction.emoji.name} by ${user.tag}`);
   if (user.bot) return;
   await updateRsvpSheet(reaction, user, false);
 });
