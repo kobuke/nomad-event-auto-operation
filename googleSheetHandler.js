@@ -8,7 +8,8 @@ dotenv.config();
 
 const service_account_email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
 const service_account_private_key = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
-const spreadsheet_id = '14Ewx1hGSk4qHrPqO7DeQ0m_TGs14I-u64wOEIb3CGQE';
+const spreadsheet_id = '16Ywg7ICqoVhXJqMUpBHQBNb4BuQCWsHwvj7Yq5UJ6_Q'; 
+// https://docs.google.com/spreadsheets/d/16Ywg7ICqoVhXJqMUpBHQBNb4BuQCWsHwvj7Yq5UJ6_Q/
 
 const auth = new google.auth.GoogleAuth({
   credentials: {
