@@ -8,8 +8,7 @@ dotenv.config();
 
 const service_account_email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
 const service_account_private_key = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
-const spreadsheet_id = '16Ywg7ICqoVhXJqMUpBHQBNb4BuQCWsHwvj7Yq5UJ6_Q'; 
-// https://docs.google.com/spreadsheets/d/16Ywg7ICqoVhXJqMUpBHQBNb4BuQCWsHwvj7Yq5UJ6_Q/
+const spreadsheet_id = '16Ywg7ICqoVhXJqMUpBHQBNb4BuQCWsHwvj7Yq5UJ6_Q';
 
 const auth = new google.auth.GoogleAuth({
   credentials: {
@@ -69,7 +68,7 @@ export const updatePaymentStatusInSheet = async (discordUserId, eventName, statu
     const paymentsData = await getSheetData('Payments');
     const usersData = await getSheetData('Users');
 
-    const userIdColumnIndex = usersData[0].indexOf('User ID');
+    const userIdColumnIndex = usersData[0].indexOf('userId');
     if (userIdColumnIndex === -1) {
       console.error('❌ Missing User ID column in Users sheet.');
       return false;

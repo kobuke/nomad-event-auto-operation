@@ -1,57 +1,68 @@
-
-import { Client, GatewayIntentBits } from 'discord.js';
-import { getSheetData } from './googleSheetHandler.js';
+import { Client, IntentsBitField } from 'discord.js';
+import { getEventsForTomorrow, getParticipantsForEvent } from './notionHandler.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMessageReactions],
+  intents: [
+    IntentsBitField.Flags.Guilds,
+    IntentsBitField.Flags.GuildMessages,
+    IntentsBitField.Flags.MessageContent,
+  ],
 });
 
-export const getEventParticipants = async () => {
-  const client = new Client({
-    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMessageReactions],
-  });
+client.on('ready', async () => {
+  console.log(`Logged in as ${client.user.tag}`);
 
-  const eventParticipants = {};
+  const events = await getEventsForTomorrow();
 
-  return new Promise((resolve, reject) => {
-    client.on('ready', async () => {
-      console.log(`Logged in as ${client.user.tag}!`);
+  if (!events || events.length === 0) {
+    console.log('🗓️ No events scheduled for tomorrow.');
+    client.destroy();
+    return;
+  }
 
-      try {
-        const events = await getSheetData('Event Setting');
+  for (const event of events) {
+    const eventId = event.id;
+    const eventName = event.properties['イベント名']?.title[0]?.plain_text || 'Unknown Event';
+    const eventDetails = event.properties['イベント詳細']?.rich_text[0]?.plain_text || '詳細なし';
+    const eventLocation = event.properties['開催場所']?.rich_text[0]?.plain_text || '場所未定';
 
-        for (const event of events.slice(1)) { // Skip header row
-          const [eventName, threadId, messageId, stamp] = event;
+    const participants = await getParticipantsForEvent(eventId);
+    const mentions = participants.map(id => `<@${id}>`).join(' ');
 
-          try {
-            const channel = await client.channels.fetch(threadId);
-            const message = await channel.messages.fetch(messageId);
-            const reactions = message.reactions.cache.get(stamp);
+    const reminderMessage = `
+📢 **イベントリマインダー: ${eventName}**
 
-            if (reactions) {
-              const users = await reactions.users.fetch();
-              eventParticipants[eventName] = users.map(user => ({ userName: user.username, userId: user.id }));
-            } else {
-              eventParticipants[eventName] = [];
-            }
-          } catch (error) {
-            console.error(`❌ Failed to process event ${eventName}:`, error);
-            eventParticipants[eventName] = [];
-          }
-        }
-        resolve(eventParticipants);
-      } catch (error) {
-        console.error('❌ Failed to fetch events from Google Sheets:', error);
-        reject(error);
-      } finally {
-        client.destroy();
+🗓️ **開催日時**: 明日
+📍 **開催場所**: ${eventLocation}
+
+📝 **イベント詳細**:
+${eventDetails}
+
+${mentions}
+
+上記イベントにご参加予定の皆様、明日の開催です！お忘れなく！
+`;
+
+    try {
+      const channel = await client.channels.cache.get(process.env.DISCORD_CHANNEL_ID);
+      if (channel) {
+        await channel.send(reminderMessage);
+        console.log(`✅ Sent reminder for event: ${eventName}`);
+      } else {
+        console.error(`❌ Discord channel not found: ${process.env.DISCORD_CHANNEL_ID}`);
       }
-    });
+    } catch (error) {
+      console.error(`❌ Failed to send reminder for event ${eventName}:`, error);
+    }
+  }
 
-    client.login(process.env.DISCORD_BOT_TOKEN);
-  });
-};
+  setTimeout(() => {
+    client.destroy();
+  }, 1000);
+});
+
+client.login(process.env.DISCORD_BOT_TOKEN);
