@@ -109,8 +109,8 @@ client.on('ready', async () => {
             const channel = await client.channels.fetch(threadId);
             if (channel) {
               await channel.send(
-                `${allUserMentions}\n🔔 **Friendly Reminder: ${eventName} is coming up soon!** 🔔\n` +
-                `Just a quick heads-up about ${eventName}. Don't miss out! ✨`
+                `${allUserMentions}\n🔔 **Friendly Reminder** 🔔\n` +
+                `Just a quick heads-up about ${eventName}.\n\nTo reserve a spot for an event, please react with a 👍 on **the pinned post!**`
               );
               console.log(`✅ Sent Reminder 1 message for event: ${eventName}`);
               await updateCell('Event Setting', i, r1ColumnIndex, '✅');
@@ -133,8 +133,8 @@ client.on('ready', async () => {
             const channel = await client.channels.fetch(threadId);
             if (channel) {
               await channel.send(
-                `${allUserMentions}\n⏰ **Last Chance Reminder: ${eventName} is almost here!** ⏰\n` +
-                `This is your final reminder for ${eventName}. Get ready! 🚀`
+                `${allUserMentions}\n⏰ **Last Chance Reminder** ⏰\n` +
+                `This is your final reminder for ${eventName}.\n\nTo reserve a spot for an event, please react with a 👍 on **the pinned post!**`
               );
               console.log(`✅ Sent Reminder 2 message for event: ${eventName}`);
               await updateCell('Event Setting', i, r2ColumnIndex, '✅');
