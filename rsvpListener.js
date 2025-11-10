@@ -46,7 +46,7 @@ const updateRsvpSheet = async (reaction, user, add) => {
 
     if (add) {
       if (!newRsvpData[userIndex][eventIndex]) {
-        newRsvpData[userIndex][eventIndex] = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
+        newRsvpData[userIndex][eventIndex] = new Date().toISOString();
       }
 
       // Stripe integration
@@ -68,9 +68,6 @@ const updateRsvpSheet = async (reaction, user, add) => {
             currentPaymentStatus = userPaymentRow[eventColumnIndex];
           }
 
-          if (currentPaymentStatus === 'DM Sent' || currentPaymentStatus === 'Done') {
-            console.log(`✅ Payment DM for ${eventName} already sent or completed for ${user.username}. Skipping.`);
-          } else {
             try {
               const session = await stripeClient.checkout.sessions.create({
                 payment_method_types: ['card'],
@@ -97,17 +94,16 @@ const updateRsvpSheet = async (reaction, user, add) => {
 
               const dmChannel = await user.createDM();
               await dmChannel.send(
-                `--------------\n**【${eventName}】**\n\n🎉 Hello ${user.username}! This is an automated message from Nomad Event Bot. 🎉\n` +
-                `Thank you for showing interest in **${eventName}**! We're so excited to have you.\n` +
-                `Please complete your payment here:\n👉[Payment Link](${session.url})\n` +
-                `If you have any questions, feel free to ask! 😊\n--------------`
+                `Hello ${user.username}!\n\n` +
+                `Here is the payment page for the event "${eventName}":\n${session.url}\n\n` +
+                `This payment link expires in 24 hours. If the payment link expires, please RSVP again.\n\n` +
+                `Thank you for your understanding! 🙏`
               );
               console.log(`✅ Sent Stripe checkout link to ${user.username}`);
               await updatePaymentStatusInSheet(user.id, eventName, 'DM Sent');
             } catch (stripeError) {
               console.error(`❌ Failed to create Stripe checkout session or send DM:`, stripeError);
             }
-          }
         }
       }
 
@@ -144,7 +140,7 @@ const updateRsvpSheet = async (reaction, user, add) => {
     const specificReaction = reactionManager.get(emojiIdentifier);
     const currentParticipants = specificReaction ? specificReaction.count : 0;
 
-    console.log("現在のRSVPの数は：" + currentParticipants);
+    console.log("Current number of RSVPs: " + currentParticipants);
 
     if (maxCap > 0) {
       if (currentParticipants >= maxCap && mcStatus !== '✅') {
