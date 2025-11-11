@@ -30,11 +30,9 @@ export const checkUnsentPayments = async () => {
   try {
     console.log('Attempting to log in to Discord...');
     await client.login(process.env.DISCORD_BOT_TOKEN);
-    console.log(`Logged in as ${client.user.tag}!`);
-  await client.login(process.env.DISCORD_BOT_TOKEN);
 
-  try {
-    // 1. Fetch all necessary data from Google Sheets
+
+
     const [events, rsvpData, paymentsData, usersData] = await Promise.all([
       getSheetData('Event Setting'),
       getSheetData('RSVP'),
