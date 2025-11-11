@@ -68,51 +68,41 @@ export const updatePaymentStatusInSheet = async (discordUserId, eventName, statu
     const paymentsData = await getSheetData('Payments');
     const usersData = await getSheetData('Users');
 
-    // Find user's name from the 'Users' sheet
-    const userRowInUsers = usersData.find(row => row[1] === discordUserId); // Assumes userId is in column B (index 1)
-    if (!userRowInUsers) {
+    const userIdColumnIndex = usersData[0].indexOf('userId');
+    if (userIdColumnIndex === -1) {
+      console.error('❌ Missing User ID column in Users sheet.');
+      return false;
+    }
+
+    const userRow = usersData.find(row => row[userIdColumnIndex] === discordUserId);
+    if (!userRow) {
       console.error(`❌ User with ID ${discordUserId} not found in Users sheet.`);
       return false;
     }
-    const userName = userRowInUsers[0]; // Assumes User Name is in column A (index 0)
+    const userName = userRow[0]; // Assuming User Name is in the first column
 
     const paymentsHeader = paymentsData[0];
-    const userIdColIndex = 0; // Assuming 'User ID' is the first column (A) in 'Payments'
-    const userNameColIndex = 1; // Assuming 'User Name' is the second column (B) in 'Payments'
-    const eventColIndex = paymentsHeader.indexOf(eventName);
+    const userNameColumnIndexInPayments = paymentsHeader.indexOf('User Name');
+    const eventColumnIndex = paymentsHeader.indexOf(eventName);
 
-    if (eventColIndex === -1) {
-      console.error(`❌ Event column "${eventName}" not found in Payments sheet.`);
+    if (userNameColumnIndexInPayments === -1 || eventColumnIndex === -1) {
+      console.error(`❌ Missing User Name column or Event ${eventName} in Payments sheet.`);
       return false;
     }
 
-    const userRowIndexInPayments = paymentsData.findIndex(row => row[userIdColIndex] === discordUserId);
+    const userRowIndexInPayments = paymentsData.findIndex(row => row[userNameColumnIndexInPayments] === userName);
 
-    if (userRowIndexInPayments !== -1) {
-      // User exists, update their status
-      const range = `Payments!${String.fromCharCode(65 + eventColIndex)}${userRowIndexInPayments + 1}`;
-      await sheets.spreadsheets.values.update({
-        spreadsheetId: spreadsheet_id,
-        range: range,
-        valueInputOption: 'USER_ENTERED',
-        requestBody: {
-          values: [[status]],
-        },
-      });
-      console.log(`✅ Payment status updated for user ${userName} (${discordUserId}) for event ${eventName} to ${status}`);
-
-    } else {
-      // User does not exist, append a new row
-      const newRow = Array(paymentsHeader.length).fill(''); // Create an empty row
-      newRow[userIdColIndex] = discordUserId;
-      newRow[userNameColIndex] = userName;
-      newRow[eventColIndex] = status;
-
-      await appendToSheet('Payments', [newRow]);
-      console.log(`✅ New user ${userName} (${discordUserId}) added to Payments sheet with status "${status}" for event ${eventName}.`);
+    if (userRowIndexInPayments === -1) {
+      console.error(`❌ User ${userName} not found in Payments sheet.`);
+      return false;
     }
-    return true;
 
+    const newPaymentsData = paymentsData.map(row => [...row]);
+    newPaymentsData[userRowIndexInPayments][eventColumnIndex] = status;
+
+    await updateSheet('Payments', newPaymentsData);
+    console.log(`✅ Payment status updated for user ${discordUserId} for event ${eventName} to ${status}`);
+    return true;
   } catch (error) {
     console.error('❌ Failed to update payment status in sheet:', error.message);
     return false;
