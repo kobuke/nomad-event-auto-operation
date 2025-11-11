@@ -17,27 +17,12 @@ client.on('ready', async () => {
   console.log(`Logged in as ${client.user.tag}!`);
 
   try {
-    console.log('[DEBUG] Starting user export to Users sheet...');
-    const guild = await client.guilds.fetch(process.env.DISCORD_GUILD_ID);
-    const channel = await guild.channels.fetch(process.env.DISCORD_CHANNEL_ID);
-    const members = await guild.members.fetch();
-
-    const channelMembers = members.filter(member => channel.permissionsFor(member).has('ViewChannel'));
-
-    const usersToExport = channelMembers.map(member => [member.user.username, member.user.id]);
-
-    // Add header row
-    const usersSheetData = [['userName', 'userId'], ...usersToExport];
-
-    await updateSheet('Users', usersSheetData);
-    console.log(`✅ Successfully exported ${usersToExport.length} users to Google Sheets (Users sheet).`);
-
     // Prepare mention string for all users
     const allUsersData = await getSheetData('Users');
     const allUserMentions = allUsersData.slice(1) // Skip header row
                                         .map(row => `<@${row[1]}>`) // Assuming userId is in column B (index 1)
                                         .join(' ');
-    console.log(`[DEBUG] All user mentions prepared: ${allUserMentions}`);
+    console.log(`[DEBUG] All user mentions prepared.`);
 
     // Existing event processing logic starts here
     const events = await getSheetData('Event Setting');
