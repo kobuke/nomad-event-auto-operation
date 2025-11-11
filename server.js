@@ -118,7 +118,7 @@ app.post('/stripe-webhook', bodyParser.raw({ type: 'application/json' }), async 
 });
 
 app.get('/success', (req, res) => {
-  res.send('<h1>決済が完了しました！ご参加ありがとうございます。</h1><p>DiscordのDMをご確認ください。</p>');
+  res.send('<h1>Payment Successful!</h1><p>Thank you for your participation! Please check your Discord DMs for further details.</p>');
 });
 
 app.get('/cancel', (req, res) => {
