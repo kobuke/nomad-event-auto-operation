@@ -16,8 +16,6 @@ export const reconcileRsvps = async () => {
   });
   await client.login(process.env.DISCORD_BOT_TOKEN);
 
-  let newRsvpsCount = 0; // Initialize counter
-
   try {
     // 1. Fetch all necessary data from Google Sheets
     console.log('[DEBUG] Fetching data from Google Sheets...');
@@ -109,7 +107,6 @@ export const reconcileRsvps = async () => {
             console.log(`[${eventName}] -- ❗️ Found missing RSVP for '${user.username}'. Staging update.`);
             newRsvpData[userRowIndex][rsvpEventCol] = new Date().toISOString();
             updatesMade++;
-            newRsvpsCount++; // Increment new RSVPs counter
           }
         }
       } catch (error) {
@@ -129,8 +126,6 @@ export const reconcileRsvps = async () => {
   } catch (error) {
     console.error('❌ An unexpected error occurred during reconciliation:', error);
   } finally {
-    console.log('✅ Finished RSVP reconciliation.');
-    console.log(`Total new RSVPs recorded: ${newRsvpsCount}`);
     client.destroy();
   }
 };
