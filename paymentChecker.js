@@ -7,13 +7,7 @@ import stripe from 'stripe';
 dotenv.config();
 
 const stripeClient = new stripe(process.env.STRIPE_SECRET_KEY);
-const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.DirectMessages,
-  ],
-});
+
 
 export const checkUnsentPayments = async () => {
   console.log('🚀 Starting check for unsent payment links...');
@@ -24,16 +18,23 @@ export const checkUnsentPayments = async () => {
       GatewayIntentBits.DirectMessages,
     ],
   });
-  await client.login(process.env.DISCORD_BOT_TOKEN);
+
+
 
   try {
+    console.log('Attempting to log in to Discord...');
+    await client.login(process.env.DISCORD_BOT_TOKEN);
+    console.log(`Logged in as ${client.user.tag}!`);
+
     // 1. Fetch all necessary data from Google Sheets
+    console.log('Fetching data from Google Sheets...');
     const [events, rsvpData, paymentsData, usersData] = await Promise.all([
       getSheetData('Event Setting'),
       getSheetData('RSVP'),
       getSheetData('Payments'),
       getSheetData('Users'),
     ]);
+    console.log('Successfully fetched data from Google Sheets.');
 
     // 2. Create a map for userName -> userId
     const userMap = new Map(usersData.slice(1).map(row => [row[0], row[1]])); // userName -> userId
@@ -41,7 +42,7 @@ export const checkUnsentPayments = async () => {
     // 3. Get header rows to find column indices
     const rsvpHeader = rsvpData[0];
     const paymentsHeader = paymentsData[0];
-    const paymentsUserIdCol = paymentsData.map(row => row[0]);
+    const paymentsUserNameCol = paymentsData.map(row => row[0]); // Column A is User Name
 
     const eventsToProcess = events.slice(1).filter(eventRow => eventRow[0]); // Filter out empty event name rows
 
@@ -82,16 +83,15 @@ export const checkUnsentPayments = async () => {
             continue;
           }
 
-          const paymentUserRowIndex = paymentsUserIdCol.indexOf(userId);
+          const paymentUserRowIndex = paymentsUserNameCol.indexOf(userName);
           let currentPaymentStatus = '';
           if (paymentUserRowIndex > -1) {
             currentPaymentStatus = paymentsData[paymentUserRowIndex][paymentEventCol];
           }
 
-          if (currentPaymentStatus !== 'DM Sent' && currentPaymentStatus !== '支払い済み') {
-            console.log(`[${eventName}] ❗️ Found user who needs payment link: ${userName} (ID: ${userId})`);
 
-                            // 6. Send payment link
+          if (currentPaymentStatus !== 'DM Sent' && currentPaymentStatus !== '支払い済み') {
+            // 6. Send payment link
                         try {
                           const member = await client.users.fetch(userId);
                           if (member) {
@@ -127,7 +127,8 @@ export const checkUnsentPayments = async () => {
                           } else {
                             console.error(`[${eventName}] ❌ An error occurred while creating Stripe session for ${userName} (ID: ${userId}):`, error);
                           }
-                        }          }
+                        }
+          }
         }
       }
     }
@@ -135,6 +136,7 @@ export const checkUnsentPayments = async () => {
     console.error('❌ An unexpected error occurred in checkUnsentPayments:', error);
   } finally {
     console.log('✅ Finished checking for unsent payment links.');
+
     client.destroy();
   }
 };
