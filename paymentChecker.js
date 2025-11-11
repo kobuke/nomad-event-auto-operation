@@ -41,7 +41,7 @@ const checkUnsentPayments = async () => {
     // 4. Iterate through each event
     for (const eventRow of eventsToProcess) {
       const eventName = eventRow[0];
-      const eventFee = parseFloat(eventRow[4]); // Assuming fee is in column E
+      const eventFee = parseFloat(eventRow[6]); // Corrected: Assuming fee is in column G (index 6)
 
       if (!eventName || isNaN(eventFee) || eventFee <= 0) {
         console.log(`[${eventName}] Skipping event with no name or zero/invalid fee.`);
@@ -84,50 +84,43 @@ const checkUnsentPayments = async () => {
           if (currentPaymentStatus !== 'DM Sent' && currentPaymentStatus !== '支払い済み') {
             console.log(`[${eventName}] ❗️ Found user who needs payment link: ${userName} (ID: ${userId})`);
 
-            // 6. Send payment link
-            try {
-              const member = await client.users.fetch(userId);
-              if (member) {
-                const session = await stripeClient.checkout.sessions.create({
-                  payment_method_types: ['card'],
-                  line_items: [{
-                    price_data: {
-                      currency: 'jpy',
-                      product_data: { name: eventName },
-                      unit_amount: eventFee,
-                    },
-                    quantity: 1,
-                  }],
-                  mode: 'payment',
-                  success_url: `https://${process.env.RAILWAY_PUBLIC_DOMAIN}/success`,
-                  cancel_url: `https://${process.env.RAILWAY_PUBLIC_DOMAIN}/cancel`,
-                  metadata: { discord_id: userId, event_id: eventName },
-                });
-
-                await member.send(
-                  `Hello ${userName}!
-
-` +
-                  `We noticed you've RSVP'd for "${eventName}" but haven't received a payment link. Here it is:
-${session.url}
-
-` +
-                  `This payment link expires in 24 hours. If the payment link expires, please RSVP again.
-
-` +
-                  `Thank you for your understanding! 🙏`
-                );
-                console.log(`[${eventName}] ✅ Successfully sent payment link to ${userName}.`);
-                await updatePaymentStatusInSheet(userId, eventName, 'DM Sent');
-              }
-            } catch (error) {
-              if (error.code === 50007) {
-                console.error(`[${eventName}] ❌ Failed to send DM to ${userName} (ID: ${userId}). They may have DMs disabled.`, error.message);
-              } else {
-                console.error(`[${eventName}] ❌ An error occurred while sending payment link to ${userName} (ID: ${userId}):`, error);
-              }
-            }
-          }
+                            // 6. Send payment link
+                        try {
+                          const member = await client.users.fetch(userId);
+                          if (member) {
+                            const session = await stripeClient.checkout.sessions.create({
+                              payment_method_types: ['card'],
+                              line_items: [{
+                                price_data: {
+                                  currency: 'jpy',
+                                  product_data: { name: eventName },
+                                  unit_amount: eventFee,
+                                },
+                                quantity: 1,
+                              }],
+                              mode: 'payment',
+                              success_url: `https://${process.env.RAILWAY_PUBLIC_DOMAIN}/success`,
+                              cancel_url: `https://${process.env.RAILWAY_PUBLIC_DOMAIN}/cancel`,
+                              metadata: { discord_id: userId, event_id: eventName },
+                            });
+            
+                            await member.send(
+                              `Hello ${userName}!\n\n` +
+                              `We noticed you've RSVP'd for "${eventName}" but haven't received a payment link. Here it is:\n${session.url}\n\n` +
+                              `This payment link expires in 24 hours. If the payment link expires, please RSVP again.\n\n` +
+                              `Thank you for your understanding! 🙏`
+                            );
+                            console.log(`[${eventName}] ✅ Successfully sent payment link to ${userName}.`);
+                            
+                            await updatePaymentStatusInSheet(userId, eventName, 'DM Sent');
+                          }
+                        } catch (error) {
+                          if (error.code === 50007) {
+                            console.error(`[${eventName}] ❌ Failed to send DM to ${userName} (ID: ${userId}). They may have DMs disabled.`, error.message);
+                          } else {
+                            console.error(`[${eventName}] ❌ An error occurred while creating Stripe session for ${userName} (ID: ${userId}):`, error);
+                          }
+                        }          }
         }
       }
     }
