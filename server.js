@@ -58,8 +58,8 @@ app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
         },
       ],
       mode: 'payment',
-      success_url: `https://${process.env.RAILWAY_PUBLIC_DOMAIN}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `https://${process.env.RAILWAY_PUBLIC_DOMAIN}/cancel`,
+      success_url: `https://nomad-event-auto-operation-production.up.railway.app/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `https://nomad-event-auto-operation-production.up.railway.app/cancel`,
       metadata: {
         discord_id: userId,
         event_id: eventId,
