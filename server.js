@@ -8,6 +8,8 @@ import { Client as DiscordClient, IntentsBitField } from 'discord.js';
 
 dotenv.config();
 
+const stripeClient = new stripe(process.env.STRIPE_SECRET_KEY);
+
 
 
 const app = express();
@@ -72,7 +74,6 @@ app.post('/create-checkout-session', bodyParser.json(), async (req, res) => {
 });
 
 // Stripe Webhook
-const stripeClient = new stripe(process.env.STRIPE_SECRET_KEY);
 const stripeEndpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 app.post('/stripe-webhook', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
