@@ -15,8 +15,15 @@ const client = new Client({
   ],
 });
 
-const checkUnsentPayments = async () => {
+export const checkUnsentPayments = async () => {
   console.log('🚀 Starting check for unsent payment links...');
+  const client = new Client({
+    intents: [
+      GatewayIntentBits.Guilds,
+      GatewayIntentBits.GuildMembers,
+      GatewayIntentBits.DirectMessages,
+    ],
+  });
   await client.login(process.env.DISCORD_BOT_TOKEN);
 
   try {
@@ -131,6 +138,3 @@ const checkUnsentPayments = async () => {
     client.destroy();
   }
 };
-
-// Run the function
-checkUnsentPayments();

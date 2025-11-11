@@ -5,16 +5,15 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.GuildMessageReactions,
-  ],
-});
-
-const reconcileRsvps = async () => {
+export const reconcileRsvps = async () => {
   console.log('🚀 Starting RSVP reconciliation...');
+  const client = new Client({
+    intents: [
+      GatewayIntentBits.Guilds,
+      GatewayIntentBits.GuildMessages,
+      GatewayIntentBits.GuildMessageReactions,
+    ],
+  });
   await client.login(process.env.DISCORD_BOT_TOKEN);
 
   try {
@@ -43,7 +42,6 @@ const reconcileRsvps = async () => {
 
     if (messageIdColIdx === -1 || emojiColIdx === -1) {
         console.error("❌ Critical Error: Could not find 'Message ID' or 'Stamp' columns in 'Event Setting' sheet. Please check the column names.");
-        client.destroy();
         return;
     }
 
@@ -131,6 +129,3 @@ const reconcileRsvps = async () => {
     client.destroy();
   }
 };
-
-// Run the function
-reconcileRsvps();

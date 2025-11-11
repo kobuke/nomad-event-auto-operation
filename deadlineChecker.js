@@ -5,15 +5,16 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.GuildMembers,
-  ],
-});
+export const checkDeadlines = async () => {
+  const client = new Client({
+    intents: [
+      GatewayIntentBits.Guilds,
+      GatewayIntentBits.GuildMessages,
+      GatewayIntentBits.GuildMembers,
+    ],
+  });
 
-client.on('ready', async () => {
+  await client.login(process.env.DISCORD_BOT_TOKEN);
   console.log(`Logged in as ${client.user.tag}!`);
 
   try {
@@ -38,7 +39,6 @@ client.on('ready', async () => {
 
     if (eventNameColumnIndex === -1 || threadIdColumnIndex === -1 || deadlineColumnIndex === -1 || postedColumnIndex === -1 || remind1DateColumnIndex === -1 || r1ColumnIndex === -1 || remind2DateColumnIndex === -1 || r2ColumnIndex === -1) {
       console.error('❌ Missing required columns in Event Setting sheet.');
-      client.destroy();
       return;
     }
 
@@ -139,6 +139,4 @@ client.on('ready', async () => {
   } finally {
     client.destroy();
   }
-});
-
-client.login(process.env.DISCORD_BOT_TOKEN);
+};
