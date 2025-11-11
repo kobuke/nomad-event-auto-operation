@@ -1,6 +1,7 @@
 
 import { Client, GatewayIntentBits, Partials } from 'discord.js';
 import { getSheetData, updateSheet, getEventDetailsFromSheet, updatePaymentStatusInSheet, updateCell } from './googleSheetHandler.js';
+import { exportUsers } from './discordUserExporter.js';
 import dotenv from 'dotenv';
 import stripe from 'stripe';
 
@@ -177,12 +178,14 @@ client.on('messageReactionAdd', async (reaction, user) => {
   console.log(`[DEBUG] Reaction added: ${reaction.emoji.name} by ${user.tag}`);
   if (user.bot) return;
   await updateRsvpSheet(reaction, user, true);
+  await exportUsers(client);
 });
 
 client.on('messageReactionRemove', async (reaction, user) => {
   console.log(`[DEBUG] Reaction removed: ${reaction.emoji.name} by ${user.tag}`);
   if (user.bot) return;
   await updateRsvpSheet(reaction, user, false);
+  await exportUsers(client);
 });
 
 client.login(process.env.DISCORD_BOT_TOKEN);
