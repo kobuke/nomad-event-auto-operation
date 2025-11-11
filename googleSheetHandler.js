@@ -175,5 +175,37 @@ export const appendToSheet = async (sheetName, values) => {
   }
 };
 
+export const markUserAsLeft = async (userId) => {
+  try {
+    const usersData = await getSheetData('Users');
+    const userRowIndex = usersData.findIndex(row => row[1] === userId); // Assuming userId is in column B (index 1)
+
+    if (userRowIndex === -1) {
+      console.log(`⚠️ User with ID ${userId} not found in 'Users' sheet. Cannot mark as left.`);
+      return false;
+    }
+
+    // Assuming 'Status' column is the 3rd column (index 2)
+    // User needs to ensure this column exists in their sheet
+    const statusColumnIndex = 2; 
+
+    // Create a copy to modify
+    const newUsersData = usersData.map(row => [...row]);
+    // Ensure the row has enough columns
+    while (newUsersData[userRowIndex].length <= statusColumnIndex) {
+      newUsersData[userRowIndex].push('');
+    }
+    newUsersData[userRowIndex][statusColumnIndex] = 'Left';
+
+    await updateSheet('Users', newUsersData);
+    console.log(`✅ Successfully marked user with ID ${userId} as 'Left' in 'Users' sheet.`);
+    return true;
+  } catch (error) {
+    console.error(`❌ Failed to mark user with ID ${userId} as 'Left' in sheet:`, error.message);
+    return false;
+  }
+};
+
+
 
 

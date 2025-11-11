@@ -1,6 +1,7 @@
 
 import { Client, GatewayIntentBits, Partials } from 'discord.js';
-import { getSheetData, updateSheet, getEventDetailsFromSheet, updatePaymentStatusInSheet, updateCell } from './googleSheetHandler.js';
+import { getSheetData, updateSheet, getEventDetailsFromSheet, updatePaymentStatusInSheet, updateCell, appendToSheet, markUserAsLeft } from './googleSheetHandler.js';
+import { exportUsers } from './discordUserExporter.js';
 import dotenv from 'dotenv';
 import stripe from 'stripe';
 
@@ -11,6 +12,7 @@ const stripeClient = new stripe(process.env.STRIPE_SECRET_KEY);
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMembers, // Required for member add/remove events
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.GuildMessageReactions,
     GatewayIntentBits.DirectMessages,
@@ -169,8 +171,21 @@ const updateRsvpSheet = async (reaction, user, add) => {
   }
 };
 
-client.on('ready', () => {
+client.on('ready', async () => {
   console.log(`Logged in as ${client.user.tag}!`);
+  console.log('Performing initial user export...');
+  await exportUsers(client);
+  console.log('Initial user export complete.');
+});
+
+client.on('guildMemberAdd', async (member) => {
+  console.log(`New user "${member.user.username}" has joined the server.`);
+  await appendToSheet('Users', [[member.user.username, member.id]]);
+});
+
+client.on('guildMemberRemove', async (member) => {
+  console.log(`User "${member.user.username}" has left the server.`);
+  await markUserAsLeft(member.id);
 });
 
 client.on('messageReactionAdd', async (reaction, user) => {

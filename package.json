@@ -20,6 +20,10 @@
     "start:rsvp-listener": "node rsvpListener.js",
 
     "export-users": "node discordUserExporter.js",
-    "update-rsvp": "node updateRsvp.js"
+    "update-rsvp": "node updateRsvp.js",
+
+    "check-deadlines": "node deadlineChecker.js",
+    "reconcile-rsvps": "node rsvpReconciler.js",
+    "cron:run": "npm-run-all -s check-deadlines reconcile-rsvps"
   }
 }
