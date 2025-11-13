@@ -21,6 +21,7 @@ export const checkDeadlines = async () => {
     // Prepare mention string for all users
     const allUsersData = await getSheetData('Users');
     const allUserMentions = allUsersData.slice(1) // Skip header row
+                                        .filter(row => typeof row[1] === 'string' && row[1].trim() !== '') // Filter out empty or invalid user IDs
                                         .map(row => `<@${row[1]}>`) // Assuming userId is in column B (index 1)
                                         .join(' ');
     console.log(`[DEBUG] All user mentions prepared.`);
