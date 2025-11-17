@@ -51,7 +51,7 @@ export const exportUsers = async (client, guildId) => {
 };
 
 // This block allows the script to be run directly for local testing
-if (require.main === module) {
+if (import.meta.url === new URL(process.argv[1], 'file://').href) {
   const client = new Client({
     intents: [
       GatewayIntentBits.Guilds,
