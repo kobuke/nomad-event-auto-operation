@@ -1,39 +1,20 @@
-import { Client, GatewayIntentBits } from 'discord.js';
-import dotenv from 'dotenv';
+export const exportUsers = async (client, guildId) => {
+  console.log('🚀 Starting user export...');
 
-dotenv.config();
-
-const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers,
-  ],
-});
-
-// --- Configuration ---
-// IMPORTANT: Replace with your Discord Guild (Server) ID
-const GUILD_ID = process.env.DISCORD_GUILD_ID; 
-// --- End Configuration ---
-
-if (!GUILD_ID) {
-  console.error('❌ DISCORD_GUILD_ID is not set in your .env file. Please set it to the ID of the Discord server you want to export users from.');
-  process.exit(1);
-}
-
-client.on('ready', async () => {
-  console.log(`Logged in as ${client.user.tag}!`);
+  if (!guildId) {
+    console.error('❌ Guild ID is not provided for user export.');
+    return;
+  }
 
   try {
-    const guild = await client.guilds.fetch(GUILD_ID);
+    const guild = await client.guilds.fetch(guildId);
     if (!guild) {
-      console.error(`❌ Guild with ID ${GUILD_ID} not found.`);
-      client.destroy();
+      console.error(`❌ Guild with ID ${guildId} not found.`);
       return;
     }
 
     console.log(`✅ Fetched guild: ${guild.name}`);
 
-    // Fetch all members, ensuring all are fetched even if there are many
     const members = await guild.members.fetch();
 
     console.log(`Found ${members.size} members in ${guild.name}.`);
@@ -43,7 +24,7 @@ client.on('ready', async () => {
     members.forEach(member => {
       const userId = member.user.id;
       const userName = member.user.username;
-      const displayName = member.nickname || member.user.displayName || member.user.username; // Prioritize nickname, then display name, then username
+      const displayName = member.nickname || member.user.displayName || member.user.username;
       console.log(`${userId},${userName},${displayName}`);
     });
 
@@ -51,9 +32,5 @@ client.on('ready', async () => {
 
   } catch (error) {
     console.error('❌ An error occurred during user export:', error);
-  } finally {
-    client.destroy();
   }
-});
-
-client.login(process.env.DISCORD_BOT_TOKEN);
+};

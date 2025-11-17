@@ -9,6 +9,13 @@ dotenv.config();
 
 const stripeClient = new stripe(process.env.STRIPE_SECRET_KEY);
 
+const GUILD_ID = process.env.DISCORD_GUILD_ID; // Add GUILD_ID here
+
+if (!GUILD_ID) {
+  console.error('❌ DISCORD_GUILD_ID is not set in your .env file. User export will not function correctly.');
+  // Decide if you want to exit or just log and continue without user export
+}
+
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -173,9 +180,13 @@ const updateRsvpSheet = async (reaction, user, add) => {
 
 client.on('ready', async () => {
   console.log(`Logged in as ${client.user.tag}!`);
-  console.log('Performing initial user export...');
-  await exportUsers(client);
-  console.log('Initial user export complete.');
+  if (GUILD_ID) {
+    console.log('Performing initial user export...');
+    await exportUsers(client, GUILD_ID);
+    console.log('Initial user export complete.');
+  } else {
+    console.warn('⚠️ DISCORD_GUILD_ID is not set. Skipping initial user export.');
+  }
 });
 
 client.on('guildMemberAdd', async (member) => {
